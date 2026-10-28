@@ -9,13 +9,13 @@ GitHubのユーザー名から活動草マップを生成し、自分のプロ�
 |指定なし（3項目とも未設定）|`contribution-graphs`へ保存|保存しない|
 |指定あり（3項目とも設定済み）|`contribution-graphs`へ保存|`DEPLOY_REPOSITORY`の`DEPLOY_BRANCH`へ保存|
 
-![profile-dark.webp](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-dark.webp#gh-dark-mode-only) \
-![profile-light.webp](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-light.webp#gh-light-mode-only)
 
 ## 1. 生成用リポジトリを作る
 
 [Use this template](https://github.com/DaisukeDaisuke/github-contribution/generate)から生成用リポジトリを作成します。既に作成済みなら、そのリポジトリを使います。
 生成対象のユーザー名は既定で生成用リポジトリの所有者です。開始年はそのユーザーのアカウント作成年、終了日は実行日から自動判定します。
+
+<img width="839" height="763" alt="image" src="https://github.com/user-attachments/assets/72fc725f-5d97-4ca8-99b2-e4ab4e53897d" />
 
 ## 2. 保存先とブランチを決める
 
@@ -38,18 +38,18 @@ GitHubのユーザー名から活動草マップを生成し、自分のプロ�
 
 ## 4. 生成用リポジトリに設定する
 
-**生成用リポジトリ**の**Settings → Secrets and variables → Actions**を開きます。
-
 ### Variables：保存先を登録
 
 **Variablesには`DEPLOY_REPOSITORY`と`DEPLOY_BRANCH`だけを登録します。トークンは登録しません。**<br>
-[このリポジトリのVariablesを開く](https://github.com/DaisukeDaisuke/github-contribution/settings/variables/actions)
 
 自分の生成用リポジトリでは、`<user>`を所有者名へ置き換えて開きます。リポジトリ名を変更した場合は`github-contribution`も変更してください。
 
 ```text
 https://github.com/<user>/github-contribution/settings/variables/actions
 ```
+
+<img width="950" height="636" alt="image" src="https://github.com/user-attachments/assets/cd9e08bf-9908-4a45-9bdb-9b3ebc08038a" />
+
 
 **Variables → New repository variable**で次の2つを登録します。
 
@@ -58,11 +58,15 @@ https://github.com/<user>/github-contribution/settings/variables/actions
 |`DEPLOY_REPOSITORY`|`DaisukeDaisuke/DaisukeDaisuke`|保存先。URLではなく`所有者/リポジトリ名`|
 |`DEPLOY_BRANCH`|`contribution-graphs`|保存先の専用ブランチ名|
 
+<img width="957" height="559" alt="image" src="https://github.com/user-attachments/assets/34d3fabc-9d33-417c-bcf2-bfbfb81c41be" />
+
+<img width="965" height="655" alt="image" src="https://github.com/user-attachments/assets/550031ad-934c-433e-a373-bc6ccd055bf7" />
+
+
 ### Secrets：DEPLOY_TOKENを登録
 
 **`DEPLOY_TOKEN`は必ずRepository secretに登録します。**<br>
 トークンの値をVariables・README・コード・URLへ記載しないでください。<br>
-[このリポジトリのSecretsを開く](https://github.com/DaisukeDaisuke/github-contribution/settings/secrets/actions)
 
 ```text
 https://github.com/<user>/github-contribution/settings/secrets/actions
@@ -78,6 +82,9 @@ Actionsは`${{ secrets.DEPLOY_TOKEN }}`からトークンを受け取り、ト�
 
 3項目とも未設定なら生成用リポジトリだけ、3項目とも設定済みなら両方のリポジトリを更新します。<br>
 一部だけ設定されている場合は、設定不足として停止します。
+
+<img width="816" height="996" alt="image" src="https://github.com/user-attachments/assets/00fe4c98-cf8c-46c5-8982-317439f97f7d" />
+
 
 ## 5. マークファイルの条件
 
