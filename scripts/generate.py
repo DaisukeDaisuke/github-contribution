@@ -246,11 +246,15 @@ def csv_text(rows, fields):
 
 
 def profile_details(image_base=''):
+    # GitHub links bare images automatically; picture preserves summary clicks.
     prefix = image_base.rstrip('/') + '/' if image_base else ''
     return (
         '<details>\n<summary>\n'
-        f'<img src="{prefix}profile-dark3.webp#gh-dark-mode-only" alt="profile" width="800" />\n'
+        '<picture>\n'
+        f'<source media="(prefers-color-scheme: dark)" srcset="{prefix}profile-dark3.webp#gh-dark-mode-only" />\n'
+        f'<source media="(prefers-color-scheme: light)" srcset="{prefix}profile-light3.webp#gh-light-mode-only" />\n'
         f'<img src="{prefix}profile-light3.webp#gh-light-mode-only" alt="profile" width="800" />\n'
+        '</picture>\n'
         '</summary>\n\n'
         f'![profile]({prefix}profile-dark.webp#gh-dark-mode-only) \\\n'
         f'![profile]({prefix}profile-light.webp#gh-light-mode-only)\n\n'

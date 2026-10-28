@@ -223,10 +223,13 @@ class ArchiveTests(unittest.TestCase):
             summary,body=collapsed.split('</summary>',1)
             heading=ET.fromstring(summary.strip()+'</summary>')
             self.assertEqual(heading.tag,'summary')
-            self.assertEqual([image.attrib['src'] for image in heading.findall('img')],[
-                'profile-dark3.webp#gh-dark-mode-only',
-                'profile-light3.webp#gh-light-mode-only',
+            picture=heading.find('picture')
+            self.assertIsNotNone(picture)
+            self.assertEqual([(source.attrib['media'],source.attrib['srcset']) for source in picture.findall('source')],[
+                ('(prefers-color-scheme: dark)','profile-dark3.webp#gh-dark-mode-only'),
+                ('(prefers-color-scheme: light)','profile-light3.webp#gh-light-mode-only'),
             ])
+            self.assertEqual(picture.find('img').attrib['src'],'profile-light3.webp#gh-light-mode-only')
             self.assertIn('![profile](profile-dark.webp#gh-dark-mode-only)',body)
             self.assertIn('![profile](profile-light.webp#gh-light-mode-only)',body)
             self.assertNotIn('3.webp',body)
