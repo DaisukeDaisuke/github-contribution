@@ -3,8 +3,11 @@
 ```markdown
 <details>
 <summary>
-<img src="profile-dark3.webp#gh-dark-mode-only" alt="profile" width="800" />
+<picture>
+<source media="(prefers-color-scheme: dark)" srcset="profile-dark3.webp#gh-dark-mode-only" />
+<source media="(prefers-color-scheme: light)" srcset="profile-light3.webp#gh-light-mode-only" />
 <img src="profile-light3.webp#gh-light-mode-only" alt="profile" width="800" />
+</picture>
 </summary>
 
 ![profile](profile-dark.webp#gh-dark-mode-only) \
@@ -17,8 +20,11 @@
 ```markdown
 <details>
 <summary>
-<img src="https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-dark3.webp#gh-dark-mode-only" alt="profile" width="800" />
+<picture>
+<source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-dark3.webp#gh-dark-mode-only" />
+<source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-light3.webp#gh-light-mode-only" />
 <img src="https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-light3.webp#gh-light-mode-only" alt="profile" width="800" />
+</picture>
 </summary>
 
 ![profile](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-dark.webp#gh-dark-mode-only) \
