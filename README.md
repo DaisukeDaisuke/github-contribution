@@ -8,4 +8,4 @@
 [ダイアログHTML](dialog.html)をブラウザーまたはGitHub Pagesで開くと、プレビューをクリックして全体を表示できます。画像内蔵の単独HTMLです。
 全体表示：index.html、profile-dark.html。
 日別CSV：daily.csv。年別CSV：yearly.csv。月別CSV：monthly.csv。全データ：data.json。
-累計8,422件・活動1,404日。
+累計8,423件・活動1,404日。

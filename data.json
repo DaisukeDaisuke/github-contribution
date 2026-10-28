@@ -6,83 +6,20 @@
     "sourceName": "GitHub公式GraphQL API",
     "sourceUrl": "https://api.github.com/graphql",
     "sourceType": "github-graphql",
-    "dataApiRequests": 11,
+    "dataApiRequests": 2,
     "rateLimit": {
       "year": 2025,
       "cost": 1,
       "limit": 5000,
       "remaining": 4998,
-      "resetAt": "2026-10-28T09:24:34Z"
+      "resetAt": "2026-10-28T09:24:32Z"
     },
     "rateLimitHistory": [
       {
         "year": 2026,
         "cost": 1,
         "limit": 5000,
-        "remaining": 4982,
-        "resetAt": "2026-10-28T08:24:31Z"
-      },
-      {
-        "year": 2016,
-        "cost": 1,
-        "limit": 5000,
-        "remaining": 4972,
-        "resetAt": "2026-10-28T08:24:33Z"
-      },
-      {
-        "year": 2017,
-        "cost": 1,
-        "limit": 5000,
-        "remaining": 4971,
-        "resetAt": "2026-10-28T08:24:33Z"
-      },
-      {
-        "year": 2018,
-        "cost": 1,
-        "limit": 5000,
-        "remaining": 4981,
-        "resetAt": "2026-10-28T08:24:31Z"
-      },
-      {
-        "year": 2019,
-        "cost": 1,
-        "limit": 5000,
-        "remaining": 4970,
-        "resetAt": "2026-10-28T08:24:33Z"
-      },
-      {
-        "year": 2020,
-        "cost": 1,
-        "limit": 5000,
-        "remaining": 4969,
-        "resetAt": "2026-10-28T08:24:33Z"
-      },
-      {
-        "year": 2021,
-        "cost": 1,
-        "limit": 5000,
-        "remaining": 4968,
-        "resetAt": "2026-10-28T08:24:33Z"
-      },
-      {
-        "year": 2022,
-        "cost": 1,
-        "limit": 5000,
-        "remaining": 4980,
-        "resetAt": "2026-10-28T08:24:31Z"
-      },
-      {
-        "year": 2023,
-        "cost": 1,
-        "limit": 5000,
-        "remaining": 4999,
-        "resetAt": "2026-10-28T09:24:32Z"
-      },
-      {
-        "year": 2024,
-        "cost": 1,
-        "limit": 5000,
-        "remaining": 4999,
+        "remaining": 4997,
         "resetAt": "2026-10-28T09:24:34Z"
       },
       {
@@ -90,13 +27,23 @@
         "cost": 1,
         "limit": 5000,
         "remaining": 4998,
-        "resetAt": "2026-10-28T09:24:34Z"
+        "resetAt": "2026-10-28T09:24:32Z"
       }
     ],
-    "historicalCachedYears": [],
+    "historicalCachedYears": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
     "historicalCacheThrough": 2024,
     "minimumRequestIntervalSeconds": 1.2,
-    "dataFetchedAt": "2026-10-28T08:24:36.495558+00:00",
+    "dataFetchedAt": "2026-10-28T08:38:22.495764+00:00",
     "periodStart": "2016-01-01",
     "periodEnd": "2026-10-28",
     "cutoffTimezone": "Asia/Tokyo",
@@ -112,7 +59,7 @@
     "dayBoundary": "GitHub dates are preserved; no timezone redistribution"
   },
   "summary": {
-    "total": 8422,
+    "total": 8423,
     "observedDays": 3954,
     "eligibleDays": 3883,
     "activeDays": 1404,
@@ -19904,7 +19851,7 @@
     },
     {
       "date": "2026-10-28",
-      "count": 21,
+      "count": 22,
       "level": 2
     }
   ],
@@ -20141,13 +20088,13 @@
       "comparisonChangePercent": 212.77
     },
     {
-      "total": 3594,
+      "total": 3595,
       "observedDays": 301,
       "eligibleDays": 301,
       "activeDays": 255,
       "activeRate": 84.72,
-      "averagePerDay": 11.94,
-      "averagePerActiveDay": 14.094,
+      "averagePerDay": 11.944,
+      "averagePerActiveDay": 14.098,
       "maxDailyCount": 145,
       "peakDates": [
         "2026-10-05"
@@ -20161,7 +20108,7 @@
       "partial": true,
       "through": "2026-10-28",
       "comparisonPreviousTotal": 1061,
-      "comparisonChangePercent": 238.74
+      "comparisonChangePercent": 238.83
     }
   ],
   "months": [
@@ -23033,13 +22980,13 @@
       "partial": false
     },
     {
-      "total": 895,
+      "total": 896,
       "observedDays": 28,
       "eligibleDays": 28,
       "activeDays": 27,
       "activeRate": 96.43,
-      "averagePerDay": 31.964,
-      "averagePerActiveDay": 33.148,
+      "averagePerDay": 32.0,
+      "averagePerActiveDay": 33.185,
       "maxDailyCount": 145,
       "peakDates": [
         "2026-10-05"
@@ -23095,13 +23042,13 @@
       "label": "火"
     },
     {
-      "total": 1081,
+      "total": 1082,
       "observedDays": 555,
       "eligibleDays": 555,
       "activeDays": 180,
       "activeRate": 32.43,
-      "averagePerDay": 1.948,
-      "averagePerActiveDay": 6.006,
+      "averagePerDay": 1.95,
+      "averagePerActiveDay": 6.011,
       "maxDailyCount": 72,
       "peakDates": [
         "2026-10-07"
