@@ -11,7 +11,7 @@
       "year": 2025,
       "cost": 1,
       "limit": 5000,
-      "remaining": 4989,
+      "remaining": 4986,
       "resetAt": "2026-10-28T08:24:31Z"
     },
     "rateLimitHistory": [
@@ -19,82 +19,82 @@
         "year": 2026,
         "cost": 1,
         "limit": 5000,
-        "remaining": 4994,
+        "remaining": 4988,
         "resetAt": "2026-10-28T08:24:31Z"
       },
       {
         "year": 2016,
         "cost": 1,
         "limit": 5000,
-        "remaining": 4993,
+        "remaining": 4988,
         "resetAt": "2026-10-28T08:24:33Z"
       },
       {
         "year": 2017,
         "cost": 1,
         "limit": 5000,
-        "remaining": 4992,
+        "remaining": 4987,
         "resetAt": "2026-10-28T08:24:33Z"
       },
       {
         "year": 2018,
         "cost": 1,
         "limit": 5000,
-        "remaining": 4991,
+        "remaining": 4986,
         "resetAt": "2026-10-28T08:24:33Z"
       },
       {
         "year": 2019,
         "cost": 1,
         "limit": 5000,
-        "remaining": 4993,
-        "resetAt": "2026-10-28T08:24:31Z"
+        "remaining": 4985,
+        "resetAt": "2026-10-28T08:24:33Z"
       },
       {
         "year": 2020,
         "cost": 1,
         "limit": 5000,
-        "remaining": 4990,
+        "remaining": 4984,
         "resetAt": "2026-10-28T08:24:33Z"
       },
       {
         "year": 2021,
         "cost": 1,
         "limit": 5000,
-        "remaining": 4989,
+        "remaining": 4983,
         "resetAt": "2026-10-28T08:24:33Z"
       },
       {
         "year": 2022,
         "cost": 1,
         "limit": 5000,
-        "remaining": 4992,
+        "remaining": 4987,
         "resetAt": "2026-10-28T08:24:31Z"
       },
       {
         "year": 2023,
         "cost": 1,
         "limit": 5000,
-        "remaining": 4991,
-        "resetAt": "2026-10-28T08:24:31Z"
+        "remaining": 4982,
+        "resetAt": "2026-10-28T08:24:33Z"
       },
       {
         "year": 2024,
         "cost": 1,
         "limit": 5000,
-        "remaining": 4990,
-        "resetAt": "2026-10-28T08:24:31Z"
+        "remaining": 4981,
+        "resetAt": "2026-10-28T08:24:33Z"
       },
       {
         "year": 2025,
         "cost": 1,
         "limit": 5000,
-        "remaining": 4989,
+        "remaining": 4986,
         "resetAt": "2026-10-28T08:24:31Z"
       }
     ],
     "minimumRequestIntervalSeconds": 1.2,
-    "dataFetchedAt": "2026-10-28T07:39:34.003209+00:00",
+    "dataFetchedAt": "2026-10-28T07:53:56.727083+00:00",
     "periodStart": "2016-01-01",
     "periodEnd": "2026-10-28",
     "cutoffTimezone": "Asia/Tokyo",
@@ -110,13 +110,13 @@
     "dayBoundary": "GitHub dates are preserved; no timezone redistribution"
   },
   "summary": {
-    "total": 8417,
+    "total": 8419,
     "observedDays": 3954,
     "eligibleDays": 3883,
     "activeDays": 1404,
     "activeRate": 36.16,
     "averagePerDay": 2.168,
-    "averagePerActiveDay": 5.995,
+    "averagePerActiveDay": 5.996,
     "maxDailyCount": 145,
     "peakDates": [
       "2026-10-05"
@@ -19902,7 +19902,7 @@
     },
     {
       "date": "2026-10-28",
-      "count": 16,
+      "count": 18,
       "level": 1
     }
   ],
@@ -20139,13 +20139,13 @@
       "comparisonChangePercent": 212.77
     },
     {
-      "total": 3589,
+      "total": 3591,
       "observedDays": 301,
       "eligibleDays": 301,
       "activeDays": 255,
       "activeRate": 84.72,
-      "averagePerDay": 11.924,
-      "averagePerActiveDay": 14.075,
+      "averagePerDay": 11.93,
+      "averagePerActiveDay": 14.082,
       "maxDailyCount": 145,
       "peakDates": [
         "2026-10-05"
@@ -20159,7 +20159,7 @@
       "partial": true,
       "through": "2026-10-28",
       "comparisonPreviousTotal": 1061,
-      "comparisonChangePercent": 238.27
+      "comparisonChangePercent": 238.45
     }
   ],
   "months": [
@@ -23031,13 +23031,13 @@
       "partial": false
     },
     {
-      "total": 890,
+      "total": 892,
       "observedDays": 28,
       "eligibleDays": 28,
       "activeDays": 27,
       "activeRate": 96.43,
-      "averagePerDay": 31.786,
-      "averagePerActiveDay": 32.963,
+      "averagePerDay": 31.857,
+      "averagePerActiveDay": 33.037,
       "maxDailyCount": 145,
       "peakDates": [
         "2026-10-05"
@@ -23093,13 +23093,13 @@
       "label": "火"
     },
     {
-      "total": 1076,
+      "total": 1078,
       "observedDays": 555,
       "eligibleDays": 555,
       "activeDays": 180,
       "activeRate": 32.43,
-      "averagePerDay": 1.939,
-      "averagePerActiveDay": 5.978,
+      "averagePerDay": 1.942,
+      "averagePerActiveDay": 5.989,
       "maxDailyCount": 72,
       "peakDates": [
         "2026-10-07"
