@@ -66,7 +66,11 @@ def fetch_graphql(user, start_year, until, token):
         raise ValueError('GraphQL requires GH_TOKEN or GITHUB_TOKEN. Use --source public for the public calendar API.')
     entries, responses, rate_history = [], [], []
     account = None
-    for year in range(start_year, until.year + 1):
+    # The first annual response already includes the account creation date.
+    # Reuse its calendar so automatic discovery adds no extra API request.
+    pending_years = collections.deque([until.year] if start_year is None else range(start_year, until.year + 1))
+    while pending_years:
+        year = pending_years.popleft()
         raw, headers = request_json('https://api.github.com/graphql', token=token, body={
             'query': graphql_query(year, until), 'variables': {'login': user},
         })
@@ -76,6 +80,9 @@ def fetch_graphql(user, start_year, until, token):
         account = raw.get('data', {}).get('user')
         if not account:
             raise ValueError('GitHub user was not found')
+        if start_year is None:
+            start_year = int(account['createdAt'][:4])
+            pending_years.extend(range(start_year, until.year))
         collection = account.get('contributionsCollection')
         if not collection:
             raise ValueError(f'No contribution calendar for {year}')
@@ -93,8 +100,9 @@ def fetch_graphql(user, start_year, until, token):
         rate_history.append({'year':year,**rate})
         print(f'Fetched {year}; {len(annual)} dates; rate={json.dumps(rate)}', flush=True)
         remaining = rate.get('remaining')
-        if remaining is not None and int(remaining) <= 0 and year < until.year:
+        if remaining is not None and int(remaining) <= 0 and pending_years:
             raise RuntimeError('Rate limit exhausted; stopped before the next request')
+    entries.sort(key=lambda day: day['date'])
     return entries, {
         'user': account['login'], 'profileUrl': account['url'], 'accountCreatedAt': account['createdAt'],
         'sourceName': 'GitHub公式GraphQL API', 'sourceUrl': 'https://api.github.com/graphql',
@@ -108,6 +116,8 @@ def fetch_public(user, start_year, until):
     base_url = 'https://github-contributions-api.jogruber.de/v4/' + urllib.parse.quote(user, safe='')
     # Account creation is needed to exclude pre-account days from activity rates.
     profile, limits = request_json('https://api.github.com/users/' + urllib.parse.quote(user, safe=''))
+    if start_year is None:
+        start_year = int(profile['created_at'][:4])
     entries, responses = [], []
     for year in range(start_year, until.year + 1):
         if year < int(profile['created_at'][:4]):
@@ -255,10 +265,10 @@ def write_outputs(report, raw, destination, repository, branch):
         '.nojekyll': '',
     }
     image_base = f'https://raw.githubusercontent.com/{repository}/{branch}'
-    snippet = f'![profile]({image_base}/profile-dark3.webp#gh-dark-mode-only) \\\n![profile]({image_base}/profile-light3.webp#gh-light-mode-only)'
-    relative = '![profile](profile-dark3.webp#gh-dark-mode-only) \\\n![profile](profile-light3.webp#gh-light-mode-only)'
+    snippet = f'<details>\n<summary>草マップを表示</summary>\n\n![profile]({image_base}/profile-dark3.webp#gh-dark-mode-only) \\\n![profile]({image_base}/profile-light3.webp#gh-light-mode-only)\n\n</details>'
+    relative = '<details>\n<summary>草マップを表示</summary>\n\n![profile](profile-dark3.webp#gh-dark-mode-only) \\\n![profile](profile-light3.webp#gh-light-mode-only)\n\n</details>'
     outputs['embed.md'] = f'# READMEへの埋め込み\n## 同じブランチに画像を置く場合\n```markdown\n{relative}\n```\n## 別のREADMEから専用ブランチの画像を参照する場合\n```markdown\n{snippet}\n```\n600pxまでのプレビューで450pxから下をフェードアウトします。全体表示のダイアログはdialog.htmlをブラウザーまたはGitHub Pagesで開いてください。\n対象：{user}。更新日：{until}。\n'
-    outputs['README.md'] = f'# {user} contribution archive\n{metadata["periodStart"]} — {until}\n{relative}\n## README用コード\n```markdown\n{relative}\n```\n## ダイアログ\n[ダイアログHTML](dialog.html)をブラウザーまたはGitHub Pagesで開くと、プレビューをクリックして全体を表示できます。画像内蔵の単独HTMLです。\n全体表示：index.html、profile-dark.html。画像原本：profile-light.webp、profile-dark.webp。\n日別CSV：daily.csv。年別CSV：yearly.csv。月別CSV：monthly.csv。全データ：data.json。取得応答：source.json。\n累計{report["summary"]["total"]:,}件・活動{report["summary"]["activeDays"]:,}日。\n'
+    outputs['README.md'] = f'# {user} contribution archive\n{metadata["periodStart"]} — {until}\n{relative}\n[全体画像：黒](profile-dark.webp) · [全体画像：白](profile-light.webp) · [README貼り付け用コード](embed.md)\n## ダイアログ\n[ダイアログHTML](dialog.html)をブラウザーまたはGitHub Pagesで開くと、プレビューをクリックして全体を表示できます。画像内蔵の単独HTMLです。\n全体表示：index.html、profile-dark.html。\n日別CSV：daily.csv。年別CSV：yearly.csv。月別CSV：monthly.csv。全データ：data.json。\n累計{report["summary"]["total"]:,}件・活動{report["summary"]["activeDays"]:,}日。\n'
     for name, content in outputs.items():
         (destination / name).write_text(content, encoding='utf-8')
     return snippet
@@ -267,7 +277,8 @@ def write_outputs(report, raw, destination, repository, branch):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--user', default=os.environ.get('CONTRIBUTION_USER') or os.environ.get('GITHUB_REPOSITORY_OWNER'))
-    parser.add_argument('--start-year', type=int, default=int(os.environ.get('START_YEAR', '2016')))
+    parser.add_argument('--start-year', type=int, default=os.environ.get('START_YEAR') or None,
+                        help='First year; defaults to the target account creation year')
     parser.add_argument('--until', type=dt.date.fromisoformat, default=dt.datetime.now(ZoneInfo('Asia/Tokyo')).date())
     parser.add_argument('--source', choices=['auto', 'graphql', 'public'], default=os.environ.get('CONTRIBUTION_SOURCE', 'auto'))
     parser.add_argument('--input', type=Path, help='Read an existing normalized archive JSON; no network requests')
@@ -275,13 +286,15 @@ def main(argv=None):
     parser.add_argument('--repository', default=os.environ.get('GITHUB_REPOSITORY'))
     parser.add_argument('--branch', default=os.environ.get('OUTPUT_BRANCH', 'contribution-graphs'))
     args = parser.parse_args(argv)
-    if args.start_year < 2008 or args.start_year > args.until.year or args.until > dt.datetime.now(ZoneInfo('Asia/Tokyo')).date():
-        parser.error('start-year must be 2008 or later; the end date must be between start-year and today')
+    if (args.start_year is not None and not 1 <= args.start_year <= args.until.year) or args.until > dt.datetime.now(ZoneInfo('Asia/Tokyo')).date():
+        parser.error('start-year must be positive and no later than the end year; the end date cannot be in the future')
     if args.input:
         raw = json.loads(args.input.read_text(encoding='utf-8'))
         if not isinstance(raw.get('metadata'), dict) or not isinstance(raw.get('days'), list):
             parser.error('--input requires a normalized data.json with metadata and days')
         metadata, entries = dict(raw['metadata']), raw['days']
+        if args.start_year is None:
+            args.start_year = dt.date.fromisoformat(metadata['periodStart']).year
         if args.user and args.user.casefold() != metadata['user'].casefold():
             parser.error('--user differs from the input snapshot owner')
         metadata['sourceName'] = '保存済みデータ（オフライン再生成）'
@@ -297,6 +310,10 @@ def main(argv=None):
         else:
             entries, metadata, raw = fetch_public(args.user, args.start_year, args.until)
         metadata['dataFetchedAt'] = dt.datetime.now(dt.timezone.utc).isoformat()
+    if args.start_year is None:
+        args.start_year = int(metadata['accountCreatedAt'][:4])
+    if args.start_year > args.until.year:
+        parser.error('The end date precedes the target account creation year')
     repository = args.repository or metadata['user'] + '/' + metadata['user']
     if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repository):
         parser.error('repository must be OWNER/REPO')

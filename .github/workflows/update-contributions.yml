@@ -34,7 +34,7 @@ jobs:
       contents: write
     env:
       CONTRIBUTION_USER: ${{ inputs.github_user || vars.CONTRIBUTION_USER || github.repository_owner }}
-      START_YEAR: ${{ vars.START_YEAR || '2016' }}
+      START_YEAR: ${{ vars.START_YEAR }}
       OUTPUT_BRANCH: contribution-graphs
       CONTRIBUTION_SOURCE: ${{ vars.CONTRIBUTION_SOURCE || 'auto' }}
     steps:

@@ -1,7 +1,9 @@
 import datetime as dt
 import importlib.util
 import json
+import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tempfile
@@ -95,6 +97,70 @@ class ArchiveTests(unittest.TestCase):
         self.assertEqual(request.call_count,2)
         sleep.assert_called_once_with(1.2)
 
+    def test_graphql_discovers_each_users_full_history_without_duplicate_requests(self):
+        until=dt.date(2031,1,2)
+        for created_year in [2007,2027]:
+            with self.subTest(created_year=created_year):
+                def response(url,**kwargs):
+                    query=kwargs['body']['query']
+                    self.assertEqual(query.count('contributionsCollection('),1)
+                    self.assertEqual(kwargs['body']['variables'],{'login':'AnotherUser'})
+                    year=int(re.search(r'from: "(\d{4})-',query).group(1))
+                    first=dt.date(year,1,1)
+                    last=min(dt.date(year,12,31),until)
+                    days=[{'date':(first+dt.timedelta(days=i)).isoformat(),'contributionCount':0,'contributionLevel':'NONE'} for i in range((last-first).days+1)]
+                    account={'login':'AnotherUser','url':'https://github.com/AnotherUser','createdAt':f'{created_year}-06-01T00:00:00Z','contributionsCollection':{'contributionCalendar':{'totalContributions':0,'weeks':[{'contributionDays':days}]}}}
+                    return {'data':{'user':account,'rateLimit':{'remaining':100}}},{}
+                with patch.object(generate,'request_json',side_effect=response) as request, patch('builtins.print'):
+                    entries,metadata,_=generate.fetch_graphql('AnotherUser',None,until,'test-token')
+                requested=[int(re.search(r'from: "(\d{4})-',call.kwargs['body']['query']).group(1)) for call in request.call_args_list]
+                self.assertEqual(sorted(requested),list(range(created_year,until.year+1)))
+                self.assertEqual(metadata['dataApiRequests'],until.year-created_year+1)
+                self.assertEqual(entries[0]['date'],f'{created_year}-01-01')
+                self.assertEqual(entries[-1]['date'],until.isoformat())
+                generate.validate_days(entries,created_year,until)
+
+    def test_public_source_starts_at_target_account_creation_year(self):
+        profile={'login':'AnotherUser','html_url':'https://github.com/AnotherUser','created_at':'2013-06-01T00:00:00Z'}
+        responses=[(profile,{})]
+        for year in [2013,2014]:
+            responses.append(({'contributions':[{'date':f'{year}-01-01','count':1,'level':1}],'total':{str(year):1}},{}))
+        with patch.object(generate,'request_json',side_effect=responses) as request, patch('builtins.print'):
+            entries,metadata,_=generate.fetch_public('AnotherUser',None,dt.date(2014,1,2))
+        self.assertEqual([call.args[0] for call in request.call_args_list],[
+            'https://api.github.com/users/AnotherUser',
+            'https://github-contributions-api.jogruber.de/v4/AnotherUser?y=2013',
+            'https://github-contributions-api.jogruber.de/v4/AnotherUser?y=2014',
+        ])
+        self.assertEqual(metadata['dataApiRequests'],2)
+        self.assertEqual([day['date'] for day in entries],['2013-01-01','2014-01-01'])
+
+    def test_cli_defaults_to_account_year_and_offline_preserves_snapshot_period(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            destination=Path(temporary)/'output'
+            args=['--user','Example','--until','2026-01-07','--output',str(destination)]
+            with patch.dict(os.environ,{'START_YEAR':'','GH_TOKEN':'test-token'},clear=True), patch.object(generate,'fetch_graphql',return_value=(sample_days(),meta(),{})) as fetch, patch('builtins.print'):
+                report=generate.main(args)
+            fetch.assert_called_once_with('Example',None,dt.date(2026,1,7),'test-token')
+            self.assertEqual(report['metadata']['periodStart'],'2025-01-01')
+            self.assertEqual(report['summary']['total'],41)
+            # A saved subset remains usable even when the account is much older.
+            report['metadata']['accountCreatedAt']='2010-01-03T00:00:00Z'
+            snapshot=Path(temporary)/'snapshot.json'
+            snapshot.write_text(json.dumps(report),encoding='utf-8')
+            with patch.dict(os.environ,{},clear=True), patch.object(generate,'request_json') as request, patch('builtins.print'):
+                offline=generate.main(['--input',str(snapshot),'--until','2026-01-07','--output',str(destination)])
+            request.assert_not_called()
+            self.assertEqual(offline['metadata']['periodStart'],'2025-01-01')
+            self.assertEqual(offline['summary']['total'],41)
+
+    def test_auto_discovery_stops_when_first_response_exhausts_rate_limit(self):
+        account={'login':'Example','url':'https://github.com/Example','createdAt':'2010-01-03T00:00:00Z','contributionsCollection':{'contributionCalendar':{'totalContributions':0,'weeks':[]}}}
+        with patch.object(generate,'request_json',return_value=({'data':{'user':account,'rateLimit':{'remaining':0}}},{})) as request, patch('builtins.print'):
+            with self.assertRaisesRegex(RuntimeError,'stopped before the next request'):
+                generate.fetch_graphql('Example',None,dt.date(2031,1,2),'test-token')
+        self.assertEqual(request.call_count,1)
+
     def test_rate_limit_stops_after_one_attempt(self):
         error=urllib.error.HTTPError('https://api.github.com/graphql',429,'Too many requests',{'Retry-After':'60'},None)
         with patch.object(generate.urllib.request,'urlopen',side_effect=error) as request:
@@ -152,7 +218,11 @@ class ArchiveTests(unittest.TestCase):
             self.assertTrue((Path(temp)/'profile-light.svg').is_file())
             self.assertIn('data-theme="dark"',(Path(temp)/'profile-dark.html').read_text(encoding='utf-8'))
             self.assertTrue((Path(temp)/'profile-dark3.svg').is_file())
-            self.assertIn('![profile](profile-dark3.webp#gh-dark-mode-only)',(Path(temp)/'README.md').read_text(encoding='utf-8'))
+            readme=(Path(temp)/'README.md').read_text(encoding='utf-8')
+            collapsed=readme.split('<details>',1)[1].split('</details>',1)[0]
+            self.assertIn('![profile](profile-dark3.webp#gh-dark-mode-only)',collapsed)
+            self.assertIn('![profile](profile-light3.webp#gh-light-mode-only)',collapsed)
+            self.assertNotIn('```',collapsed)
 
     def test_preview_clips_and_fades_without_moving_calendar_cells(self):
         report=generate.build_report(sample_days(),meta(),2025,dt.date(2026,1,7))
