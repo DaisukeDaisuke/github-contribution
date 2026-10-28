@@ -8,6 +8,7 @@
 ![profile](profile-light3.webp#gh-light-mode-only)
 
 </details>
+
 ```
 ## 別のREADMEから専用ブランチの画像を参照する場合
 ```markdown
@@ -18,6 +19,7 @@
 ![profile](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-light3.webp#gh-light-mode-only)
 
 </details>
+
 ```
 600pxまでのプレビューで450pxから下をフェードアウトします。全体表示のダイアログはdialog.htmlをブラウザーまたはGitHub Pagesで開いてください。
 対象：DaisukeDaisuke。更新日：2026-10-28。
