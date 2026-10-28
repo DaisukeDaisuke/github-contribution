@@ -17,6 +17,8 @@ CELL = 10
 LEFT = 36
 TOP = 64
 WIDTH = 800
+PROJECT_URL = 'https://github.com/DaisukeDaisuke/github-contribution'
+PROJECT_CREDIT = 'Star And Try Using The Repository at ' + PROJECT_URL
 
 
 def esc(value):
@@ -49,7 +51,7 @@ def svg_theme_styles():
     return ''.join(rules)
 
 
-def calendar_svg(report, interactive=False, theme='light'):
+def calendar_svg(report, interactive=False, theme='light', show_credit=True):
     colors = THEMES[theme]
     palette = colors['palette']
     meta = report['metadata']
@@ -85,6 +87,9 @@ def calendar_svg(report, interactive=False, theme='light'):
         parts.append(text(2,y,year,13,colors['muted'],500,extra=f'data-year="{year}"'))
     parts.append('</g>')
     legend_y = TOP + grid_height + 12
+    if show_credit:
+        parts.append(f'<a href="{PROJECT_URL}" target="_blank" rel="noopener noreferrer" data-role="project-link">'
+                     + text(LEFT,legend_y+8,PROJECT_CREDIT,9,colors['muted']) + '</a>')
     parts.append(text(LEFT+COLUMNS*STEP-151,legend_y+8,'Less',10,colors['muted']))
     for level,color in enumerate(palette):
         parts.append(f'<rect class="shade" data-level="{level}" x="{LEFT+COLUMNS*STEP-120+level*STEP}" y="{legend_y}" width="10" height="10" rx="2" fill="{color}" stroke="{colors["stroke"]}" stroke-opacity="{colors["strokeOpacity"]}"/>')
@@ -104,7 +109,7 @@ def render_preview_svg(report, theme='light', max_height=600, fade_height=150):
     namespace='http://www.w3.org/2000/svg'
     ET.register_namespace('',namespace)
     tag=lambda name:'{'+namespace+'}'+name
-    root=ET.fromstring(render_svg(report,theme))
+    root=ET.fromstring(calendar_svg(report,theme=theme,show_credit=False))
     full_height=int(root.attrib['height'])
     height=min(max_height,full_height)
     root.set('height',str(height))

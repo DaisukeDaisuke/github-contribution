@@ -200,7 +200,7 @@ class ArchiveTests(unittest.TestCase):
         self.assertTrue(weekdays)
         self.assertTrue(all(float(node.attrib['x'])>max(float(c.attrib['x']) for c in cells) for node in weekdays))
         page=render_report.render_html(report)
-        self.assertNotIn('DaisukeDaisuke',page)
+        self.assertNotIn('DaisukeDaisuke',page.replace(render_report.PROJECT_URL,''))
         self.assertIn('min-width:0',page)
         self.assertNotIn('year-card',page)
         self.assertNotIn('集計条件',page)
