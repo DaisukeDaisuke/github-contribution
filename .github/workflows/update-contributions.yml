@@ -3,7 +3,7 @@ name: Update contribution archive
 on:
   schedule:
     # Every month on the 1st at 09:17 JST (00:17 UTC).
-    - cron: '17 0 1 * *'
+    - cron: '28 6 1 * *'
   workflow_dispatch:
     inputs:
       github_user:
