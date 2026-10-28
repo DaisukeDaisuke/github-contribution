@@ -288,6 +288,16 @@ def profile_images(image_base=''):
     )
 
 
+def embed_markdown(repository, branch):
+    images = profile_images(f'https://raw.githubusercontent.com/{repository}/{branch}')
+    sibling = profile_images('/../' + branch)
+    return (f'# READMEへの埋め込み\n\n'
+            f'[{repository} / {branch}](https://github.com/{repository}/tree/{branch})\n\n'
+            f'{images}\n'
+            f'## 同じリポジトリの別ブランチから参照\n\n```markdown\n{sibling}```\n\n'
+            f'## 別のリポジトリから参照\n\n```markdown\n{images}```\n')
+
+
 def write_outputs(report, raw, destination, repository, branch):
     from render_report import render_html, render_svg, render_preview_svg
     destination.mkdir(parents=True, exist_ok=True)
@@ -310,7 +320,7 @@ def write_outputs(report, raw, destination, repository, branch):
     image_base = f'https://raw.githubusercontent.com/{repository}/{branch}'
     snippet = profile_images(image_base)
     relative = profile_images()
-    outputs['embed.md'] = f'# READMEへの埋め込み\n## 同じブランチに画像を置く場合\n```markdown\n{relative}\n```\n## 別のREADMEから専用ブランチの画像を参照する場合\n```markdown\n{snippet}\n```\nREADMEには全体版WebPを表示します。フェード版も同じブランチに生成します。\n対象：{user}。更新日：{until}。\n'
+    outputs['embed.md'] = embed_markdown(repository, branch) + f'\n対象：{user}。更新日：{until}。\n'
     outputs['README.md'] = f'# {user} contribution archive\n{metadata["periodStart"]} — {until}\n{relative}\n[全体画像：黒](profile-dark.webp) · [全体画像：白](profile-light.webp) · [README貼り付け用コード](embed.md)\n## ダイアログ\n[ダイアログHTML](dialog.html)をブラウザーまたはGitHub Pagesで開くと、プレビューをクリックして全体を表示できます。画像内蔵の単独HTMLです。\n全体表示：index.html、profile-dark.html。\n日別CSV：daily.csv。年別CSV：yearly.csv。月別CSV：monthly.csv。全データ：data.json。\n累計{report["summary"]["total"]:,}件・活動{report["summary"]["activeDays"]:,}日。\n'
     for name, content in outputs.items():
         (destination / name).write_text(content, encoding='utf-8')

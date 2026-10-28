@@ -11,7 +11,7 @@ import sys
 import tempfile
 from urllib.parse import quote
 
-from generate import profile_images, request_json
+from generate import embed_markdown, request_json
 
 MARKER = '.contribution-map'
 MARKER_CONTENT = 'Managed output branch for GitHub Contribution Archive.\n'
@@ -141,11 +141,7 @@ def publish_to_remote(source, remote_url, branch, read_default, *, env=None, ove
 def publish_external(source, repository, branch, token):
     # Validate direct Python callers as well as the command-line environment.
     repository, branch, token = configuration({'DEPLOY_REPOSITORY': repository, 'DEPLOY_BRANCH': branch, 'DEPLOY_TOKEN': token})
-    base = f'https://raw.githubusercontent.com/{repository}/{branch}'
-    embed = ('# READMEへの埋め込み\n## 同じリポジトリの別ブランチから参照\n```markdown\n'
-             + profile_images('/../' + branch) + '\n```\n'
-             + '## 同じブランチから参照\n```markdown\n' + profile_images() + '\n```\n'
-             + '## 別のリポジトリから参照\n```markdown\n' + profile_images(base) + '\n```\n')
+    embed = embed_markdown(repository, branch)
     return publish_to_remote(
         source, 'https://github.com/' + repository + '.git', branch,
         lambda: default_branch(repository, token),

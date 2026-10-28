@@ -95,14 +95,25 @@ jobs:
           --directory dist
           --branch "$OUTPUT_BRANCH"
           --default-branch "$DEFAULT_BRANCH"
-      - name: Show the README embed snippet
-        run: cat dist/embed.md >> "$GITHUB_STEP_SUMMARY"
       - name: Publish to the optional destination repository
         env:
           DEPLOY_REPOSITORY: ${{ vars.DEPLOY_REPOSITORY }}
           DEPLOY_BRANCH: ${{ vars.DEPLOY_BRANCH }}
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
         run: python scripts/deploy.py --directory dist
+      - name: Show the README images and embed snippet
+        env:
+          DEPLOY_REPOSITORY: ${{ vars.DEPLOY_REPOSITORY }}
+          DEPLOY_BRANCH: ${{ vars.DEPLOY_BRANCH }}
+        run: |
+          python - <<'PY'
+          import os
+          from scripts.generate import embed_markdown
+          repository = os.environ.get('DEPLOY_REPOSITORY') or os.environ['GITHUB_REPOSITORY']
+          branch = os.environ.get('DEPLOY_BRANCH') or os.environ['OUTPUT_BRANCH']
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write(embed_markdown(repository, branch))
+          PY
       - name: Upload the optional Pages site
         if: vars.ENABLE_PAGES == 'true'
         uses: actions/upload-pages-artifact@v4
