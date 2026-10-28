@@ -64,6 +64,7 @@ def calendar_svg(report, interactive=False, theme='light'):
     parts.append(text(LEFT,25,meta['user'],19,colors['foreground'],600,extra='class="primary"'))
     parts.append(text(WIDTH-17,25,f'{report["summary"]["total"]:,} contributions',13,colors['foreground'],extra='text-anchor="end" class="primary"'))
     parts.append(text(LEFT,45,meta['periodStart']+' — '+meta['periodEnd'],11,colors['muted']))
+    parts.append(text(WIDTH-17,45,f'{report["summary"]["activeDays"]:,} days',11,colors['muted'],extra='text-anchor="end" data-stat="active-days"'))
     for band in range(bands):
         for label, row in [('Mon',1),('Wed',3),('Fri',5)]:
             parts.append(text(LEFT+COLUMNS*STEP+19,TOP+(band*7+row)*STEP+8,label,9,colors['muted'],extra=f'data-weekday="{label}"'))

@@ -174,6 +174,8 @@ class ArchiveTests(unittest.TestCase):
         report=generate.build_report(sample_days(),meta(),2025,dt.date(2026,1,7))
         svg=render_report.render_svg(report)
         root=ET.fromstring(svg)
+        active_days=[node for node in root.iter() if node.attrib.get('data-stat')=='active-days']
+        self.assertEqual([node.text for node in active_days],['6 days'])
         cells=[node for node in root.iter() if 'data-date' in node.attrib]
         self.assertEqual(len(cells),372)
         self.assertEqual(sum(int(c.attrib['data-count']) for c in cells),41)
