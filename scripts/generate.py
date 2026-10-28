@@ -24,6 +24,18 @@ REQUEST_INTERVAL_SECONDS = 1.2
 _last_request_finished = None
 
 
+def year_cache_path(directory, user, source, year, until):
+    if directory is None or year > until.year - 2:
+        return None
+    return Path(directory) / source / user.lower() / f'{year}.json'
+
+
+def save_year_cache(path, response):
+    if path is not None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(response, ensure_ascii=False), encoding='utf-8')
+
+
 def request_json(url, *, token=None, body=None):
     global _last_request_finished
     if _last_request_finished is not None:
@@ -61,25 +73,36 @@ def graphql_query(year, until):
     }}'''
 
 
-def fetch_graphql(user, start_year, until, token):
+def fetch_graphql(user, start_year, until, token, *, cache_dir=None):
     if not token:
         raise ValueError('GraphQL requires GH_TOKEN or GITHUB_TOKEN. Use --source public for the public calendar API.')
     entries, responses, rate_history = [], [], []
     account = None
+    cached_years = []
     # The first annual response already includes the account creation date.
     # Reuse its calendar so automatic discovery adds no extra API request.
     pending_years = collections.deque([until.year] if start_year is None else range(start_year, until.year + 1))
     while pending_years:
         year = pending_years.popleft()
-        raw, headers = request_json('https://api.github.com/graphql', token=token, body={
-            'query': graphql_query(year, until), 'variables': {'login': user},
-        })
+        cache_path = year_cache_path(cache_dir, user, 'github-graphql', year, until)
+        cached = cache_path is not None and cache_path.is_file()
+        if cached:
+            raw, headers = json.loads(cache_path.read_text(encoding='utf-8')), {}
+            cached_years.append(year)
+            print(f'Using historical cache {year}.json; no API request.', flush=True)
+        else:
+            remaining = rate_history[-1].get('remaining') if rate_history else None
+            if remaining is not None and int(remaining) <= 0:
+                raise RuntimeError('Rate limit exhausted; stopped before the next request')
+            raw, headers = request_json('https://api.github.com/graphql', token=token, body={
+                'query': graphql_query(year, until), 'variables': {'login': user},
+            })
         if raw.get('errors'):
             messages = '; '.join(str(error.get('message', 'GraphQL error')) for error in raw['errors'])
             raise RuntimeError('GraphQL stopped without retry or fallback: ' + messages)
         account = raw.get('data', {}).get('user')
-        if not account:
-            raise ValueError('GitHub user was not found')
+        if not account or account['login'].lower() != user.lower():
+            raise ValueError('GitHub user was not found or the cached owner differs')
         if start_year is None:
             start_year = int(account['createdAt'][:4])
             pending_years.extend(range(start_year, until.year))
@@ -96,33 +119,42 @@ def fetch_graphql(user, start_year, until, token):
             raise ValueError(f'{year}: annual count does not match calendar total')
         entries.extend(annual)
         rate = raw['data'].get('rateLimit', headers)
-        responses.append({'year':year,'response':raw})
-        rate_history.append({'year':year,**rate})
-        print(f'Fetched {year}; {len(annual)} dates; rate={json.dumps(rate)}', flush=True)
-        remaining = rate.get('remaining')
-        if remaining is not None and int(remaining) <= 0 and pending_years:
-            raise RuntimeError('Rate limit exhausted; stopped before the next request')
+        responses.append({'year':year,'response':raw,'cached':cached})
+        if not cached:
+            save_year_cache(cache_path, raw)
+            rate_history.append({'year':year,**rate})
+            print(f'Fetched {year}; {len(annual)} dates; rate={json.dumps(rate)}', flush=True)
     entries.sort(key=lambda day: day['date'])
     return entries, {
         'user': account['login'], 'profileUrl': account['url'], 'accountCreatedAt': account['createdAt'],
         'sourceName': 'GitHub公式GraphQL API', 'sourceUrl': 'https://api.github.com/graphql',
-        'sourceType': 'github-graphql', 'dataApiRequests': len(responses),
+        'sourceType': 'github-graphql', 'dataApiRequests': len(rate_history),
         'rateLimit': rate_history[-1], 'rateLimitHistory': rate_history,
+        'historicalCachedYears': sorted(cached_years), 'historicalCacheThrough': until.year - 2,
         'minimumRequestIntervalSeconds': REQUEST_INTERVAL_SECONDS,
     }, {'responses':responses}
 
 
-def fetch_public(user, start_year, until):
+def fetch_public(user, start_year, until, *, cache_dir=None):
     base_url = 'https://github-contributions-api.jogruber.de/v4/' + urllib.parse.quote(user, safe='')
     # Account creation is needed to exclude pre-account days from activity rates.
     profile, limits = request_json('https://api.github.com/users/' + urllib.parse.quote(user, safe=''))
     if start_year is None:
         start_year = int(profile['created_at'][:4])
-    entries, responses = [], []
+    entries, responses, cached_years = [], [], []
+    requests = 0
     for year in range(start_year, until.year + 1):
         if year < int(profile['created_at'][:4]):
             continue
-        raw, _ = request_json(base_url + f'?y={year}')
+        cache_path = year_cache_path(cache_dir, user, 'public-calendar-api', year, until)
+        cached = cache_path is not None and cache_path.is_file()
+        if cached:
+            raw = json.loads(cache_path.read_text(encoding='utf-8'))
+            cached_years.append(year)
+            print(f'Using historical cache {year}.json; no API request.', flush=True)
+        else:
+            raw, _ = request_json(base_url + f'?y={year}')
+            requests += 1
         if raw.get('error') or not isinstance(raw.get('contributions'), list):
             raise ValueError(f'Public calendar API did not return contributions for {year}')
         annual = [d for d in raw['contributions'] if d['date'].startswith(str(year))]
@@ -130,12 +162,15 @@ def fetch_public(user, start_year, until):
         if reported_total is None or sum(d['count'] for d in annual) != reported_total:
             raise ValueError(f'{year}: public API annual total does not match')
         entries.extend(annual)
-        responses.append({'year':year,'response':raw})
-        print(f'Fetched public calendar {year}',flush=True)
+        responses.append({'year':year,'response':raw,'cached':cached})
+        if not cached:
+            save_year_cache(cache_path, raw)
+            print(f'Fetched public calendar {year}',flush=True)
     return entries, {
         'user': profile['login'], 'profileUrl': profile['html_url'], 'accountCreatedAt': profile['created_at'],
         'sourceName': 'GitHub Contributions API v4（第三者・公開草マップ由来）',
-        'sourceUrl': base_url, 'sourceType': 'public-calendar-api', 'dataApiRequests': len(responses),
+        'sourceUrl': base_url, 'sourceType': 'public-calendar-api', 'dataApiRequests': requests,
+        'historicalCachedYears': sorted(cached_years), 'historicalCacheThrough': until.year - 2,
         'profileApiRequests': 1, 'rateLimit': limits, 'cacheMaximumSeconds': 3600,
         'minimumRequestIntervalSeconds': REQUEST_INTERVAL_SECONDS,
     }, {'responses':responses}
@@ -290,6 +325,7 @@ def main(argv=None):
     parser.add_argument('--until', type=dt.date.fromisoformat, default=dt.datetime.now(ZoneInfo('Asia/Tokyo')).date())
     parser.add_argument('--source', choices=['auto', 'graphql', 'public'], default=os.environ.get('CONTRIBUTION_SOURCE', 'auto'))
     parser.add_argument('--input', type=Path, help='Read an existing normalized archive JSON; no network requests')
+    parser.add_argument('--cache-dir', type=Path, help='Reuse complete years at least two calendar years old')
     parser.add_argument('--output', type=Path, default=Path('dist'))
     parser.add_argument('--repository', default=os.environ.get('GITHUB_REPOSITORY'))
     parser.add_argument('--branch', default=os.environ.get('OUTPUT_BRANCH', 'contribution-graphs'))
@@ -313,10 +349,11 @@ def main(argv=None):
             parser.error('Specify a valid --user or GITHUB_REPOSITORY_OWNER')
         token = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN')
         use_graphql = args.source == 'graphql' or (args.source == 'auto' and bool(token))
+        cache_options = {'cache_dir': args.cache_dir} if args.cache_dir else {}
         if use_graphql:
-            entries, metadata, raw = fetch_graphql(args.user, args.start_year, args.until, token)
+            entries, metadata, raw = fetch_graphql(args.user, args.start_year, args.until, token, **cache_options)
         else:
-            entries, metadata, raw = fetch_public(args.user, args.start_year, args.until)
+            entries, metadata, raw = fetch_public(args.user, args.start_year, args.until, **cache_options)
         metadata['dataFetchedAt'] = dt.datetime.now(dt.timezone.utc).isoformat()
     if args.start_year is None:
         args.start_year = int(metadata['accountCreatedAt'][:4])

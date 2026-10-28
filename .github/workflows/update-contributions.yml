@@ -50,6 +50,14 @@ jobs:
           DEPLOY_BRANCH: ${{ vars.DEPLOY_BRANCH }}
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
         run: python scripts/deploy.py --check-config
+      - name: Install the Actions cache client
+        run: npm install --prefix "$RUNNER_TEMP/contribution-cache-tools" --no-audit --no-fund --ignore-scripts @actions/cache@6.3.0
+      - name: Restore historical year JSON files from Actions cache
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const cache = require(`${process.env.RUNNER_TEMP}/contribution-cache-tools/node_modules/@actions/cache`);
+            await require('./scripts/history_cache.cjs')({github, core, cache}, 'restore');
       - name: Install the SVG to PNG renderer
         run: |
           sudo apt-get update
@@ -59,7 +67,13 @@ jobs:
       - name: Generate SVG, HTML and data
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python scripts/generate.py --output dist
+        run: python scripts/generate.py --output dist --cache-dir .cache/contributions
+      - name: Save historical year JSON files to Actions cache
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const cache = require(`${process.env.RUNNER_TEMP}/contribution-cache-tools/node_modules/@actions/cache`);
+            await require('./scripts/history_cache.cjs')({github, core, cache}, 'save');
       - name: Render the light and dark PNGs
         run: python scripts/render_images.py --directory dist
       - name: Encode lossless WebP images
