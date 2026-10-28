@@ -10,6 +10,9 @@ GitHubの活動履歴を、最新年から過去年へ続く縦長の草マッ�
 - ダイアログHTMLではプレビューをクリックして全体を表示。単独HTMLとしてブラウザーで開けます。
 - 通常のHTMLでは日別件数の確認、日付選択、CSV・JSONの保存ができます。
 - GitHub Actionsで毎月1日09:17 JSTに更新し、画像・HTML・データを`contribution-graphs`ブランチに保存します。
+- 指定した外部リポジトリの専用ブランチにも保存できます。既定ブランチへのpushとforce pushは禁止し、既存ブランチにはマークファイルを要求します。
+## インストール・外部保存
+[画像付きのセットアップ手順](install.md)に、`DEPLOY_REPOSITORY`・`DEPLOY_BRANCH`・`DEPLOY_TOKEN`の設定、マークファイルの条件、プロフィールREADMEからの参照方法をまとめています。
 ## 自分の草マップを作る
 1. [Use this template](https://github.com/DaisukeDaisuke/github-contribution/generate)からリポジトリを作成します。
 2. 作成先の**Actions → Update contribution archive → Run workflow**を実行します。対象は既定でリポジトリ所有者です。別のユーザーを指定する場合は`github_user`に入力します。

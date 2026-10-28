@@ -44,6 +44,12 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.13'
+      - name: Validate optional external deployment settings
+        env:
+          DEPLOY_REPOSITORY: ${{ vars.DEPLOY_REPOSITORY }}
+          DEPLOY_BRANCH: ${{ vars.DEPLOY_BRANCH }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: python scripts/deploy.py --check-config
       - name: Install the SVG to PNG renderer
         run: |
           sudo apt-get update
@@ -77,6 +83,12 @@ jobs:
           --default-branch "$DEFAULT_BRANCH"
       - name: Show the README embed snippet
         run: cat dist/embed.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish to the optional destination repository
+        env:
+          DEPLOY_REPOSITORY: ${{ vars.DEPLOY_REPOSITORY }}
+          DEPLOY_BRANCH: ${{ vars.DEPLOY_BRANCH }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: python scripts/deploy.py --directory dist
       - name: Upload the optional Pages site
         if: vars.ENABLE_PAGES == 'true'
         uses: actions/upload-pages-artifact@v4
