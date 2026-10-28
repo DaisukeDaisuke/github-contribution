@@ -35,6 +35,7 @@ GitHubのユーザー名から活動草マップを生成し、自分のプロ�
 
 個人設定の**Settings → Developer settings → Personal access tokens → Fine-grained tokens**でトークンを作成します。
 **Resource owner**に保存先の所有者、**Repository access → Only select repositories**に保存先リポジトリを指定します。**Repository permissions → Contents**を**Read and write**にします。**Metadata: Read-only**も必要です。
+このトークンは指定先への保存だけに使います。生成用リポジトリへの保存は従来どおりActions標準の`github.token`を使うため、`DEPLOY_TOKEN`に生成用リポジトリへのアクセス権限を追加する必要はありません。
 
 ## 4. 生成用リポジトリに設定する
 
@@ -79,6 +80,7 @@ https://github.com/<user>/github-contribution/settings/secrets/actions
 |`DEPLOY_TOKEN`|手順3で作成したトークン|
 
 Actionsは`${{ secrets.DEPLOY_TOKEN }}`からトークンを受け取り、トークンの値をログへ出力せず、リモートURL・コマンド引数・Git設定ファイルにも保存しません。
+失敗時はGitの標準エラーと標準出力を表示します。トークン本体・URL内の認証情報・Authorizationヘッダー・認証に使うBase64値を伏せたうえで、拒否理由と終了コードを残します。
 
 3項目とも未設定なら生成用リポジトリだけ、3項目とも設定済みなら両方のリポジトリを更新します。<br>
 一部だけ設定されている場合は、設定不足として停止します。

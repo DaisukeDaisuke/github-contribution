@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from urllib.parse import quote
 
 from generate import profile_images, request_json
 
@@ -167,12 +168,45 @@ def main(argv=None):
     publish_external(options.directory, *settings)
 
 
-if __name__ == '__main__':
+def redact_diagnostics(message):
+    """Keep Git's explanation, removing credentials before anything is printed."""
+    if isinstance(message, bytes):
+        message = message.decode('utf-8', errors='replace')
+    message = message or ''
+    # Strip terminal escapes before matching credentials.
+    message = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', message)
+    secrets = set()
+    for name in ('DEPLOY_TOKEN', 'GH_TOKEN', 'GITHUB_TOKEN'):
+        token = os.environ.get(name, '').strip()
+        if not token:
+            continue
+        secrets.update((token, quote(token, safe=''),
+                        base64.b64encode(token.encode('utf-8')).decode('ascii'),
+                        base64.b64encode(('x-access-token:' + token).encode('utf-8')).decode('ascii')))
+    for secret in sorted(secrets, key=len, reverse=True):
+        message = message.replace(secret, '[REDACTED]')
+    message = re.sub(r'(?i)(\b(?:proxy-)?authorization\s*:\s*)[^\r\n]*',
+                     r'\1[REDACTED]', message)
+    message = re.sub(r'(?i)(https?://)[^/\s@]+@', r'\1[REDACTED]@', message)
+    message = re.sub(r'\b(?:github_pat_|gh[pousr]_)[A-Za-z0-9_]+', '[REDACTED]', message)
+    return message
+
+
+def cli(argv=None):
     try:
-        main()
+        main(argv)
     except subprocess.CalledProcessError as exc:
         print(f'Deployment failed: git {exc.cmd[1]} exited {exc.returncode}; no force push or retry was attempted.', file=sys.stderr)
-        raise SystemExit(1)
+        for label, output in (('stderr', exc.stderr), ('stdout', exc.stdout)):
+            if output:
+                print(f'Git {label} (credentials redacted):', file=sys.stderr)
+                print(redact_diagnostics(output).rstrip(), file=sys.stderr)
+        return 1
     except (ValueError, RuntimeError, OSError, KeyError) as exc:
-        print('Deployment failed: ' + str(exc), file=sys.stderr)
-        raise SystemExit(1)
+        print('Deployment failed: ' + redact_diagnostics(str(exc)), file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(cli())

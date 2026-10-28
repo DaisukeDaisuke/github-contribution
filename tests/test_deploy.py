@@ -1,10 +1,13 @@
 import base64
+import io
+import os
 from pathlib import Path
 import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
 import sys
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
@@ -207,6 +210,94 @@ class DeploymentTests(unittest.TestCase):
             self.publish(read_default=read_default)
         self.assertEqual(self.git('show', 'refs/heads/profile-images:stale.txt', cwd=self.remote), 'old output')
         self.assertNotIn(deploy.MARKER, self.git('ls-tree', '--name-only', 'refs/heads/profile-images', cwd=self.remote))
+
+    def test_real_push_rejection_keeps_reason_and_redacts_credentials(self):
+        token = 'push-rejection-test-token'
+        hook = self.remote / 'hooks' / 'pre-receive'
+        hook.write_text('#!/bin/sh\n'
+                        'echo "Write access to repository not granted: push-rejection-test-token" >&2\n'
+                        'exit 1\n', encoding='utf-8')
+        hook.chmod(0o755)
+        stderr = io.StringIO()
+        with patch.dict(os.environ, {'DEPLOY_TOKEN': token}), \
+                patch.object(deploy, 'main', side_effect=lambda argv: self.publish()), \
+                patch('sys.stderr', stderr):
+            self.assertEqual(deploy.cli([]), 1)
+        output = stderr.getvalue()
+        self.assertIn('Write access to repository not granted:', output)
+        self.assertIn('pre-receive hook declined', output)
+        self.assertNotIn(token, output)
+        self.assertEqual(self.head('trunk'), self.default_head)
+        self.assertEqual(self.git('ls-remote', '--heads', 'origin', 'refs/heads/profile-images', cwd=self.writer), '')
+
+
+class DeploymentDiagnosticsTests(unittest.TestCase):
+    def test_raw_url_encoded_and_basic_credentials_are_redacted(self):
+        token = 'test/token+with:punctuation'
+        values = (token, quote(token, safe=''),
+                  base64.b64encode(token.encode()).decode(),
+                  base64.b64encode(('x-access-token:' + token).encode()).decode())
+        with patch.dict(os.environ, {'DEPLOY_TOKEN': token}, clear=True):
+            output = deploy.redact_diagnostics('\n'.join(values) + '\nfatal: HTTP 403')
+        for value in values:
+            self.assertNotIn(value, output)
+        self.assertEqual(output.count('[REDACTED]'), len(values))
+        self.assertIn('fatal: HTTP 403', output)
+
+    def test_source_tokens_are_also_redacted(self):
+        with patch.dict(os.environ, {'GH_TOKEN': 'source-test-token', 'GITHUB_TOKEN': 'actions-test-token'}, clear=True):
+            output = deploy.redact_diagnostics('source-test-token actions-test-token')
+        self.assertEqual(output, '[REDACTED] [REDACTED]')
+
+    def test_url_credentials_headers_and_token_patterns_are_redacted(self):
+        message = ('fatal: unable to access https://user:unknown-password@github.com/Example/profile.git: HTTP 403\n'
+                   'Authorization: Basic dXNlcjpwYXNzd29yZA==\n'
+                   'proxy-authorization: Bearer unknown-bearer\n'
+                   'github_pat_FAKE_FIXTURE ghp_FAKE_FIXTURE\n'
+                   'remote: Write access to repository not granted.')
+        with patch.dict(os.environ, {}, clear=True):
+            output = deploy.redact_diagnostics(message)
+        for value in ('unknown-password', 'dXNlcjpwYXNzd29yZA==', 'unknown-bearer',
+                      'github_pat_FAKE_FIXTURE', 'ghp_FAKE_FIXTURE'):
+            self.assertNotIn(value, output)
+        self.assertIn('https://[REDACTED]@github.com/Example/profile.git: HTTP 403', output)
+        self.assertIn('remote: Write access to repository not granted.', output)
+
+    def test_terminal_escapes_do_not_break_redaction_and_utf8_bytes_work(self):
+        with patch.dict(os.environ, {'DEPLOY_TOKEN': 'test-token'}, clear=True):
+            output = deploy.redact_diagnostics('test-\x1b[31mtoken\x1b[0m\n拒否されました'.encode('utf-8'))
+        self.assertEqual(output, '[REDACTED]\n拒否されました')
+
+    def test_cli_reports_git_stderr_and_stdout_but_exits_unsuccessfully(self):
+        token = 'deployment-diagnostic-test-token'
+        failure = subprocess.CalledProcessError(
+            128, ['git', 'push', 'origin', 'HEAD:refs/heads/profile-images'],
+            output='remote: error: GH006: Protected branch update failed.\n',
+            stderr=('remote: Write access to repository not granted.\n'
+                    f'fatal: unable to access https://x-access-token:{token}@github.com/Example/profile.git: HTTP 403\n'))
+        stderr = io.StringIO()
+        with patch.dict(os.environ, {'DEPLOY_TOKEN': token}, clear=True), \
+                patch.object(deploy, 'main', side_effect=failure), patch('sys.stderr', stderr):
+            status = deploy.cli(['--directory', 'dist'])
+        self.assertEqual(status, 1)
+        output = stderr.getvalue()
+        self.assertIn('git push exited 128', output)
+        self.assertIn('Write access to repository not granted.', output)
+        self.assertIn('Protected branch update failed.', output)
+        self.assertIn('HTTP 403', output)
+        self.assertNotIn(token, output)
+        self.assertNotIn('Traceback', output)
+
+    def test_cli_sanitizes_other_errors_and_handles_missing_git_output(self):
+        with patch.dict(os.environ, {'DEPLOY_TOKEN': 'test-secret-token'}, clear=True):
+            for error in (ValueError('invalid setting: test-secret-token'),
+                          subprocess.CalledProcessError(128, ['git', 'push'])):
+                with self.subTest(error=type(error).__name__):
+                    stderr = io.StringIO()
+                    with patch.object(deploy, 'main', side_effect=error), patch('sys.stderr', stderr):
+                        self.assertEqual(deploy.cli([]), 1)
+                    self.assertIn('Deployment failed:', stderr.getvalue())
+                    self.assertNotIn('test-secret-token', stderr.getvalue())
 
 
 if __name__ == '__main__':
