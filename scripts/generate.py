@@ -245,6 +245,19 @@ def csv_text(rows, fields):
     return stream.getvalue()
 
 
+def profile_details(image_base=''):
+    prefix = image_base.rstrip('/') + '/' if image_base else ''
+    return (
+        '<details>\n<summary>\n'
+        f'<img src="{prefix}profile-dark3.webp#gh-dark-mode-only" alt="profile" width="800" />\n'
+        f'<img src="{prefix}profile-light3.webp#gh-light-mode-only" alt="profile" width="800" />\n'
+        '</summary>\n\n'
+        f'![profile]({prefix}profile-dark.webp#gh-dark-mode-only) \\\n'
+        f'![profile]({prefix}profile-light.webp#gh-light-mode-only)\n\n'
+        '</details>\n'
+    )
+
+
 def write_outputs(report, raw, destination, repository, branch):
     from render_report import render_html, render_svg, render_preview_svg
     destination.mkdir(parents=True, exist_ok=True)
@@ -265,9 +278,9 @@ def write_outputs(report, raw, destination, repository, branch):
         '.nojekyll': '',
     }
     image_base = f'https://raw.githubusercontent.com/{repository}/{branch}'
-    snippet = f'<details>\n<summary>草マップを表示</summary>\n\n![profile]({image_base}/profile-dark3.webp#gh-dark-mode-only) \\\n![profile]({image_base}/profile-light3.webp#gh-light-mode-only)\n\n</details>\n'
-    relative = '<details>\n<summary>草マップを表示</summary>\n\n![profile](profile-dark3.webp#gh-dark-mode-only) \\\n![profile](profile-light3.webp#gh-light-mode-only)\n\n</details>\n'
-    outputs['embed.md'] = f'# READMEへの埋め込み\n## 同じブランチに画像を置く場合\n```markdown\n{relative}\n```\n## 別のREADMEから専用ブランチの画像を参照する場合\n```markdown\n{snippet}\n```\n600pxまでのプレビューで450pxから下をフェードアウトします。全体表示のダイアログはdialog.htmlをブラウザーまたはGitHub Pagesで開いてください。\n対象：{user}。更新日：{until}。\n'
+    snippet = profile_details(image_base)
+    relative = profile_details()
+    outputs['embed.md'] = f'# READMEへの埋め込み\n## 同じブランチに画像を置く場合\n```markdown\n{relative}\n```\n## 別のREADMEから専用ブランチの画像を参照する場合\n```markdown\n{snippet}\n```\n600pxのプレビュー画像を見出しに表示し、クリックすると全体画像を展開します。\n対象：{user}。更新日：{until}。\n'
     outputs['README.md'] = f'# {user} contribution archive\n{metadata["periodStart"]} — {until}\n{relative}\n[全体画像：黒](profile-dark.webp) · [全体画像：白](profile-light.webp) · [README貼り付け用コード](embed.md)\n## ダイアログ\n[ダイアログHTML](dialog.html)をブラウザーまたはGitHub Pagesで開くと、プレビューをクリックして全体を表示できます。画像内蔵の単独HTMLです。\n全体表示：index.html、profile-dark.html。\n日別CSV：daily.csv。年別CSV：yearly.csv。月別CSV：monthly.csv。全データ：data.json。\n累計{report["summary"]["total"]:,}件・活動{report["summary"]["activeDays"]:,}日。\n'
     for name, content in outputs.items():
         (destination / name).write_text(content, encoding='utf-8')

@@ -220,8 +220,16 @@ class ArchiveTests(unittest.TestCase):
             self.assertTrue((Path(temp)/'profile-dark3.svg').is_file())
             readme=(Path(temp)/'README.md').read_text(encoding='utf-8')
             collapsed=readme.split('<details>',1)[1].split('</details>',1)[0]
-            self.assertIn('![profile](profile-dark3.webp#gh-dark-mode-only)',collapsed)
-            self.assertIn('![profile](profile-light3.webp#gh-light-mode-only)',collapsed)
+            summary,body=collapsed.split('</summary>',1)
+            heading=ET.fromstring(summary.strip()+'</summary>')
+            self.assertEqual(heading.tag,'summary')
+            self.assertEqual([image.attrib['src'] for image in heading.findall('img')],[
+                'profile-dark3.webp#gh-dark-mode-only',
+                'profile-light3.webp#gh-light-mode-only',
+            ])
+            self.assertIn('![profile](profile-dark.webp#gh-dark-mode-only)',body)
+            self.assertIn('![profile](profile-light.webp#gh-light-mode-only)',body)
+            self.assertNotIn('3.webp',body)
             self.assertNotIn('```',collapsed)
 
     def test_preview_clips_and_fades_without_moving_calendar_cells(self):

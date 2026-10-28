@@ -1,10 +1,13 @@
 # GitHub Contribution
 GitHubの活動履歴を、最新年から過去年へ続く縦長の草マップにします。
 <details>
-<summary>草マップを表示</summary>
+<summary>
+<img src="https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-dark3.webp#gh-dark-mode-only" alt="profile" width="800" />
+<img src="https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-light3.webp#gh-light-mode-only" alt="profile" width="800" />
+</summary>
 
-![profile](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-dark3.webp#gh-dark-mode-only) \
-![profile](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-light3.webp#gh-light-mode-only)
+![profile](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-dark.webp#gh-dark-mode-only) \
+![profile](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-light.webp#gh-light-mode-only)
 
 </details>
 
