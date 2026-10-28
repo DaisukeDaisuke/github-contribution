@@ -1,10 +1,13 @@
 # DaisukeDaisuke contribution archive
 2016-01-01 — 2026-10-28
 <details>
-<summary>草マップを表示</summary>
+<summary>
+<img src="profile-dark3.webp#gh-dark-mode-only" alt="profile" width="800" />
+<img src="profile-light3.webp#gh-light-mode-only" alt="profile" width="800" />
+</summary>
 
-![profile](profile-dark3.webp#gh-dark-mode-only) \
-![profile](profile-light3.webp#gh-light-mode-only)
+![profile](profile-dark.webp#gh-dark-mode-only) \
+![profile](profile-light.webp#gh-light-mode-only)
 
 </details>
 
@@ -13,4 +16,4 @@
 [ダイアログHTML](dialog.html)をブラウザーまたはGitHub Pagesで開くと、プレビューをクリックして全体を表示できます。画像内蔵の単独HTMLです。
 全体表示：index.html、profile-dark.html。
 日別CSV：daily.csv。年別CSV：yearly.csv。月別CSV：monthly.csv。全データ：data.json。
-累計8,410件・活動1,404日。
+累計8,411件・活動1,404日。
