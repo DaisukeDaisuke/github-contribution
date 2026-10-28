@@ -265,8 +265,8 @@ def write_outputs(report, raw, destination, repository, branch):
         '.nojekyll': '',
     }
     image_base = f'https://raw.githubusercontent.com/{repository}/{branch}'
-    snippet = f'<details>\n<summary>草マップを表示</summary>\n\n![profile]({image_base}/profile-dark3.webp#gh-dark-mode-only) \\\n![profile]({image_base}/profile-light3.webp#gh-light-mode-only)\n\n</details>'
-    relative = '<details>\n<summary>草マップを表示</summary>\n\n![profile](profile-dark3.webp#gh-dark-mode-only) \\\n![profile](profile-light3.webp#gh-light-mode-only)\n\n</details>'
+    snippet = f'<details>\n<summary>草マップを表示</summary>\n\n![profile]({image_base}/profile-dark3.webp#gh-dark-mode-only) \\\n![profile]({image_base}/profile-light3.webp#gh-light-mode-only)\n\n</details>\n'
+    relative = '<details>\n<summary>草マップを表示</summary>\n\n![profile](profile-dark3.webp#gh-dark-mode-only) \\\n![profile](profile-light3.webp#gh-light-mode-only)\n\n</details>\n'
     outputs['embed.md'] = f'# READMEへの埋め込み\n## 同じブランチに画像を置く場合\n```markdown\n{relative}\n```\n## 別のREADMEから専用ブランチの画像を参照する場合\n```markdown\n{snippet}\n```\n600pxまでのプレビューで450pxから下をフェードアウトします。全体表示のダイアログはdialog.htmlをブラウザーまたはGitHub Pagesで開いてください。\n対象：{user}。更新日：{until}。\n'
     outputs['README.md'] = f'# {user} contribution archive\n{metadata["periodStart"]} — {until}\n{relative}\n[全体画像：黒](profile-dark.webp) · [全体画像：白](profile-light.webp) · [README貼り付け用コード](embed.md)\n## ダイアログ\n[ダイアログHTML](dialog.html)をブラウザーまたはGitHub Pagesで開くと、プレビューをクリックして全体を表示できます。画像内蔵の単独HTMLです。\n全体表示：index.html、profile-dark.html。\n日別CSV：daily.csv。年別CSV：yearly.csv。月別CSV：monthly.csv。全データ：data.json。\n累計{report["summary"]["total"]:,}件・活動{report["summary"]["activeDays"]:,}日。\n'
     for name, content in outputs.items():
