@@ -245,20 +245,11 @@ def csv_text(rows, fields):
     return stream.getvalue()
 
 
-def profile_details(image_base=''):
-    # GitHub links bare images automatically; picture preserves summary clicks.
+def profile_images(image_base=''):
     prefix = image_base.rstrip('/') + '/' if image_base else ''
     return (
-        '<details>\n<summary>\n'
-        '<picture>\n'
-        f'<source media="(prefers-color-scheme: dark)" srcset="{prefix}profile-dark3.webp#gh-dark-mode-only" />\n'
-        f'<source media="(prefers-color-scheme: light)" srcset="{prefix}profile-light3.webp#gh-light-mode-only" />\n'
-        f'<img src="{prefix}profile-light3.webp#gh-light-mode-only" alt="profile" width="800" />\n'
-        '</picture>\n'
-        '</summary>\n\n'
-        f'![profile]({prefix}profile-dark.webp#gh-dark-mode-only) \\\n'
-        f'![profile]({prefix}profile-light.webp#gh-light-mode-only)\n\n'
-        '</details>\n'
+        f'![profile-dark.webp]({prefix}profile-dark.webp#gh-dark-mode-only) \\\n'
+        f'![profile-light.webp]({prefix}profile-light.webp#gh-light-mode-only)\n'
     )
 
 
@@ -282,9 +273,9 @@ def write_outputs(report, raw, destination, repository, branch):
         '.nojekyll': '',
     }
     image_base = f'https://raw.githubusercontent.com/{repository}/{branch}'
-    snippet = profile_details(image_base)
-    relative = profile_details()
-    outputs['embed.md'] = f'# READMEへの埋め込み\n## 同じブランチに画像を置く場合\n```markdown\n{relative}\n```\n## 別のREADMEから専用ブランチの画像を参照する場合\n```markdown\n{snippet}\n```\n600pxのプレビュー画像を見出しに表示し、クリックすると全体画像を展開します。\n対象：{user}。更新日：{until}。\n'
+    snippet = profile_images(image_base)
+    relative = profile_images()
+    outputs['embed.md'] = f'# READMEへの埋め込み\n## 同じブランチに画像を置く場合\n```markdown\n{relative}\n```\n## 別のREADMEから専用ブランチの画像を参照する場合\n```markdown\n{snippet}\n```\nREADMEには全体版WebPを表示します。フェード版も同じブランチに生成します。\n対象：{user}。更新日：{until}。\n'
     outputs['README.md'] = f'# {user} contribution archive\n{metadata["periodStart"]} — {until}\n{relative}\n[全体画像：黒](profile-dark.webp) · [全体画像：白](profile-light.webp) · [README貼り付け用コード](embed.md)\n## ダイアログ\n[ダイアログHTML](dialog.html)をブラウザーまたはGitHub Pagesで開くと、プレビューをクリックして全体を表示できます。画像内蔵の単独HTMLです。\n全体表示：index.html、profile-dark.html。\n日別CSV：daily.csv。年別CSV：yearly.csv。月別CSV：monthly.csv。全データ：data.json。\n累計{report["summary"]["total"]:,}件・活動{report["summary"]["activeDays"]:,}日。\n'
     for name, content in outputs.items():
         (destination / name).write_text(content, encoding='utf-8')

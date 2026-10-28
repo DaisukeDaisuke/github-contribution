@@ -1,18 +1,7 @@
 # GitHub Contribution
 GitHubの活動履歴を、最新年から過去年へ続く縦長の草マップにします。
-<details>
-<summary>
-<picture>
-<source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-dark3.webp#gh-dark-mode-only" />
-<source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-light3.webp#gh-light-mode-only" />
-<img src="https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-light3.webp#gh-light-mode-only" alt="profile" width="800" />
-</picture>
-</summary>
-
-![profile](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-dark.webp#gh-dark-mode-only) \
-![profile](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-light.webp#gh-light-mode-only)
-
-</details>
+![profile-dark.webp](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-dark.webp#gh-dark-mode-only) \
+![profile-light.webp](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-light.webp#gh-light-mode-only)
 
 [全体画像：黒](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-dark.webp) · [全体画像：白](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-light.webp) · [ダイアログHTMLをダウンロード](https://github.com/DaisukeDaisuke/github-contribution/raw/refs/heads/contribution-graphs/dialog.html)
 ## できること

@@ -208,8 +208,8 @@ class ArchiveTests(unittest.TestCase):
         report=generate.build_report(sample_days(),meta(),2025,dt.date(2026,1,7))
         with tempfile.TemporaryDirectory() as temp:
             snippet=generate.write_outputs(report,{'fixture':True},Path(temp),'TemplateOwner/reusable-map','contribution-graphs')
-            self.assertIn('TemplateOwner/reusable-map/contribution-graphs/profile-dark3.webp#gh-dark-mode-only',snippet)
-            self.assertIn('TemplateOwner/reusable-map/contribution-graphs/profile-light3.webp#gh-light-mode-only',snippet)
+            self.assertIn('TemplateOwner/reusable-map/contribution-graphs/profile-dark.webp#gh-dark-mode-only',snippet)
+            self.assertIn('TemplateOwner/reusable-map/contribution-graphs/profile-light.webp#gh-light-mode-only',snippet)
             self.assertIn(' \\\n',snippet)
             self.assertEqual(len((Path(temp)/'daily.csv').read_text(encoding='utf-8').splitlines()),373)
             data=json.loads((Path(temp)/'data.json').read_text(encoding='utf-8'))
@@ -218,22 +218,14 @@ class ArchiveTests(unittest.TestCase):
             self.assertTrue((Path(temp)/'profile-light.svg').is_file())
             self.assertIn('data-theme="dark"',(Path(temp)/'profile-dark.html').read_text(encoding='utf-8'))
             self.assertTrue((Path(temp)/'profile-dark3.svg').is_file())
+            self.assertTrue((Path(temp)/'profile-light3.svg').is_file())
             readme=(Path(temp)/'README.md').read_text(encoding='utf-8')
-            collapsed=readme.split('<details>',1)[1].split('</details>',1)[0]
-            summary,body=collapsed.split('</summary>',1)
-            heading=ET.fromstring(summary.strip()+'</summary>')
-            self.assertEqual(heading.tag,'summary')
-            picture=heading.find('picture')
-            self.assertIsNotNone(picture)
-            self.assertEqual([(source.attrib['media'],source.attrib['srcset']) for source in picture.findall('source')],[
-                ('(prefers-color-scheme: dark)','profile-dark3.webp#gh-dark-mode-only'),
-                ('(prefers-color-scheme: light)','profile-light3.webp#gh-light-mode-only'),
-            ])
-            self.assertEqual(picture.find('img').attrib['src'],'profile-light3.webp#gh-light-mode-only')
-            self.assertIn('![profile](profile-dark.webp#gh-dark-mode-only)',body)
-            self.assertIn('![profile](profile-light.webp#gh-light-mode-only)',body)
-            self.assertNotIn('3.webp',body)
-            self.assertNotIn('```',collapsed)
+            self.assertIn('![profile-dark.webp](profile-dark.webp#gh-dark-mode-only)',readme)
+            self.assertIn('![profile-light.webp](profile-light.webp#gh-light-mode-only)',readme)
+            self.assertNotIn('<details',readme)
+            self.assertNotIn('<summary',readme)
+            self.assertNotIn('3.webp',readme)
+            self.assertNotIn('```',readme)
 
     def test_preview_clips_and_fades_without_moving_calendar_cells(self):
         report=generate.build_report(sample_days(),meta(),2025,dt.date(2026,1,7))
