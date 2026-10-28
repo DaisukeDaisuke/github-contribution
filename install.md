@@ -85,7 +85,7 @@ Actionsは`${{ secrets.DEPLOY_TOKEN }}`からトークンを受け取り、ト�
 3項目とも未設定なら生成用リポジトリだけ、3項目とも設定済みなら両方のリポジトリを更新します。<br>
 一部だけ設定されている場合は、設定不足として停止します。
 
-<img width="816" height="996" alt="image" src="https://github.com/user-attachments/assets/00fe4c98-cf8c-46c5-8982-317439f97f7d" />
+<img width="802" height="819" alt="image" src="https://github.com/user-attachments/assets/8a4ab7d1-884d-4f2c-8083-d16ba58a277e" />
 
 
 ## 5. マークファイルの条件
