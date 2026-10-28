@@ -1,0 +1,103 @@
+name: Update contribution archive
+
+on:
+  schedule:
+    # Every month on the 1st at 09:17 JST (00:17 UTC).
+    - cron: '17 0 1 * *'
+  workflow_dispatch:
+    inputs:
+      github_user:
+        description: 'GitHub user; leave empty to use the repository owner'
+        type: string
+        required: false
+        default: ''
+  push:
+    branches-ignore: [contribution-graphs]
+    paths:
+      - '.github/workflows/update-contributions.yml'
+      - 'scripts/**'
+      - 'templates/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: contribution-archive-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      CONTRIBUTION_USER: ${{ inputs.github_user || vars.CONTRIBUTION_USER || github.repository_owner }}
+      START_YEAR: ${{ vars.START_YEAR || '2016' }}
+      OUTPUT_BRANCH: contribution-graphs
+      CONTRIBUTION_SOURCE: ${{ vars.CONTRIBUTION_SOURCE || 'auto' }}
+    steps:
+      - name: Check out the template source
+        uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Install the SVG to PNG renderer
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y inkscape fonts-liberation
+      - name: Set up ImageMagick 7
+        uses: mfinelli/setup-imagemagick@v8
+      - name: Generate SVG, HTML and data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/generate.py --output dist
+      - name: Render the light and dark PNGs
+        run: python scripts/render_images.py --directory dist
+      - name: Encode lossless WebP images
+        working-directory: dist
+        run: |
+          magick mogrify -format webp -quality 100 -define webp:lossless=true -define webp:method=6 -define webp:exact=true profile-dark.png profile-light.png
+          magick mogrify -format webp -quality 100 -define webp:lossless=true -define webp:method=6 -define webp:exact=true profile-dark3.png profile-light3.png
+          magick compare -metric AE profile-dark.png profile-dark.webp null:
+          magick compare -metric AE profile-light.png profile-light.webp null:
+          magick compare -metric AE profile-dark3.png profile-dark3.webp null:
+          magick compare -metric AE profile-light3.png profile-light3.webp null:
+      - name: Build the standalone profile dialog
+        run: python scripts/render_dialog.py --directory dist
+      - name: Publish files to the dedicated branch
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: >-
+          python scripts/publish.py
+          --directory dist
+          --branch "$OUTPUT_BRANCH"
+          --default-branch "$DEFAULT_BRANCH"
+      - name: Show the README embed snippet
+        run: cat dist/embed.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload the optional Pages site
+        if: vars.ENABLE_PAGES == 'true'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    if: vars.ENABLE_PAGES == 'true'
+    needs: generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy the same generated HTML
+        id: deployment
+        uses: actions/deploy-pages@v4
