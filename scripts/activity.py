@@ -177,6 +177,16 @@ ICONS = {
 }
 
 
+def format_bytes(size):
+    """Format GitHub language bytes using decimal B/KB/MB/GB/TB units."""
+    value = float(size)
+    for unit in ('B', 'KB', 'MB', 'GB', 'TB'):
+        if value < 1000 or unit == 'TB':
+            number = f'{value:,.0f}' if unit == 'B' else f'{value:,.1f}'.rstrip('0').rstrip('.')
+            return f'{number} {unit}'
+        value /= 1000
+
+
 def render(model, theme='light', preview=False):
     dark = theme == 'dark'
     bg, panel, fg, muted, border, accent = ('#0d1117', '#161b22', '#e6edf3', '#9da7b3', '#30363d', '#79c0ff') if dark else ('#ffffff', '#f6f8fa', '#1f2328', '#59636e', '#d1d9e0', '#0969da')
@@ -242,7 +252,7 @@ def render(model, theme='light', preview=False):
         x, y = 32 + i%2*380, 480+i//2*25
         color = item['color'] if re.fullmatch(r'#[0-9a-fA-F]{6}', item['color']) else '#8b949e'
         parts.append(f'<circle cx="{x+5}" cy="{y-5}" r="4" fill="{color}"/>')
-        parts.append(f'<text x="{x+18}" y="{y}" font-size="13">{escape(item["name"])} <tspan fill="{muted}">{100*item["size"]/total:.1f}%</tspan></text>')
+        parts.append(f'<text x="{x+18}" y="{y}" font-size="13">{escape(item["name"])} <tspan fill="{muted}">{100*item["size"]/total:.1f}%</tspan><tspan dx="12" fill="{muted}">{format_bytes(item["size"])}</tspan></text>')
     if model['partial']:
         text(32, last_y + 26, f'PARTIAL SAMPLE · {model["sampled"]:,} / {model["repositories"]:,}', 11, muted)
     parts.append('</g></svg>')
