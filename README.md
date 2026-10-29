@@ -1,10 +1,24 @@
 # GitHub Contribution
 
 GitHubの活動履歴を、最新年から過去年へ続く縦長の草マップにします。
-![profile-dark.webp](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-dark.webp#gh-dark-mode-only) \
-![profile-light.webp](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-light.webp#gh-light-mode-only)
+[![profile-dark.webp](../contribution-graphs/profile-dark3.webp#gh-dark-mode-only)](../contribution-graphs/profile-dark.webp#gh-dark-mode-only) \
+[![profile-light.webp](../contribution-graphs/profile-light3.webp#gh-light-mode-only)](../contribution-graphs/profile-light.webp#gh-light-mode-only)
 
 [全体画像：黒](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-dark.webp) · [全体画像：白](https://raw.githubusercontent.com/DaisukeDaisuke/github-contribution/contribution-graphs/profile-light.webp) · [ダイアログHTMLをダウンロード](https://github.com/DaisukeDaisuke/github-contribution/raw/refs/heads/contribution-graphs/dialog.html)
+
+
+## Activity statistics
+
+[![activity-dark.webp](../contribution-graphs/activity-dark3.webp#gh-dark-mode-only)](../contribution-graphs/activity-dark.webp#gh-dark-mode-only) \
+[![activity-light.webp](../contribution-graphs/activity-light3.webp#gh-light-mode-only)](../contribution-graphs/activity-light.webp#gh-light-mode-only)
+
+草画像とは別に、PRの作成・マージ・Open・未マージClose、Issueの作成・Open・Close、レビューしたPR数、公開リポジトリ数・アーカイブ数・Stars・Forks・Release数、Followers、言語分布を表示します。プレビューをクリックすると全体画像を開きます。
+
+公開データのみを集計します。PR・Issueは本人が作成したもの、レビューはレビューしたPRの重複なし件数です。リポジトリ集計と言語分布は所有する公開・非forkリポジトリが対象です。言語の割合はGitHubが検出したバイト数で、本人が書いた行数ではありません。
+
+通常はGraphQL 1回（100リポジトリまで）で統計を取得します。それ以上は100件ずつ直列取得し、通信完了後に1.2秒以上あけます。上限は49回とアイコン取得1回の計50回。上限で打ち切った場合は画像に`PARTIAL SAMPLE`と集計対象数を表示します。
+
+統計はユーザー別・UTCのISO週（年＋週番号）別のActionsキャッシュへ保存し、同じ週の再実行はAPI取得0回。週が変わったら統計を更新し、URLが同じアイコンは前回のキャッシュを再利用します。キャッシュが削除された場合は再取得します。**活動統計のAPI応答・キャッシュJSONは生成ブランチやPagesへ公開しません。**
 
 ## できること
 

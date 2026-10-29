@@ -142,6 +142,9 @@ def publish_external(source, repository, branch, token):
     # Validate direct Python callers as well as the command-line environment.
     repository, branch, token = configuration({'DEPLOY_REPOSITORY': repository, 'DEPLOY_BRANCH': branch, 'DEPLOY_TOKEN': token})
     embed = embed_markdown(repository, branch)
+    if (Path(source) / 'activity-dark.webp').is_file():
+        from activity import activity_embed
+        embed += activity_embed(repository, branch)
     return publish_to_remote(
         source, 'https://github.com/' + repository + '.git', branch,
         lambda: default_branch(repository, token),

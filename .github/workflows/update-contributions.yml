@@ -74,6 +74,24 @@ jobs:
           script: |
             const cache = require(`${process.env.RUNNER_TEMP}/contribution-cache-tools/node_modules/@actions/cache`);
             await require('./scripts/history_cache.cjs')({github, core, cache}, 'save');
+      - name: Restore activity snapshot from Actions cache
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const cache = require(`${process.env.RUNNER_TEMP}/contribution-cache-tools/node_modules/@actions/cache`);
+            await require('./scripts/activity_cache.cjs')({core, cache}, 'restore');
+      - name: Generate independent activity cards
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/activity.py --directory dist
+      - name: Save activity snapshot to Actions cache
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const cache = require(`${process.env.RUNNER_TEMP}/contribution-cache-tools/node_modules/@actions/cache`);
+            await require('./scripts/activity_cache.cjs')({core, cache}, 'save');
+      - name: Render activity PNGs
+        run: python scripts/activity.py --directory dist --render
       - name: Render the light and dark PNGs
         run: python scripts/render_images.py --directory dist
       - name: Encode lossless WebP images
@@ -85,6 +103,13 @@ jobs:
           magick compare -metric AE profile-light.png profile-light.webp null:
           magick compare -metric AE profile-dark3.png profile-dark3.webp null:
           magick compare -metric AE profile-light3.png profile-light3.webp null:
+      - name: Encode lossless activity WebP images
+        working-directory: dist
+        run: |
+          magick mogrify -format webp -quality 100 -define webp:lossless=true -define webp:method=6 -define webp:exact=true activity-dark.png activity-light.png activity-dark3.png activity-light3.png
+          for stem in activity-dark activity-light activity-dark3 activity-light3; do
+            magick compare -metric AE "$stem.png" "$stem.webp" null:
+          done
       - name: Build the standalone profile dialog
         run: python scripts/render_dialog.py --directory dist
       - name: Publish files to the dedicated branch
@@ -109,10 +134,14 @@ jobs:
           python - <<'PY'
           import os
           from scripts.generate import embed_markdown
+          import sys
+          sys.path.insert(0, "scripts")
+          from activity import activity_embed
           repository = os.environ.get('DEPLOY_REPOSITORY') or os.environ['GITHUB_REPOSITORY']
           branch = os.environ.get('DEPLOY_BRANCH') or os.environ['OUTPUT_BRANCH']
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
               summary.write(embed_markdown(repository, branch))
+              summary.write(activity_embed(repository, branch))
           PY
       - name: Upload the optional Pages site
         if: vars.ENABLE_PAGES == 'true'

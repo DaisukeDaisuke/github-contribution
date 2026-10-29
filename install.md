@@ -134,3 +134,19 @@ Actionsは`${{ secrets.DEPLOY_TOKEN }}`からトークンを受け取り、ト�
 |マークファイルなし|保存先ブランチのルートに通常の`.contribution-map`があるか|
 |認証・pushエラー|トークンの期限、保存先の選択、Contents権限、ブランチ保護|
 |保存先が更新された|他の更新が完了してからRun workflowを再実行|
+
+
+## 活動統計の画像
+
+追加のシークレットは不要です。草画像と同じ対象ユーザーを、Actions標準のトークンで集計します。`DEPLOY_TOKEN`は従来どおり外部デプロイ専用です。
+
+`activity-dark.webp` / `activity-light.webp`が全体画像、`activity-dark3.webp` / `activity-light3.webp`が高さ600pxのフェード付きプレビューです。SVGとPNGも生成します。草画像の生成処理は変更しません。
+
+同じリポジトリのREADMEから、別ブランチのプレビューをクリックして全体画像を開けます。外部デプロイの場合は`contribution-graphs`を保存先ブランチに置き換えます。生成先の`embed.md`とActions概要にも、保存先に合わせた画像とコピー用コードを表示します。
+
+```markdown
+[![activity-dark.webp](../contribution-graphs/activity-dark3.webp#gh-dark-mode-only)](../contribution-graphs/activity-dark.webp#gh-dark-mode-only) \
+[![activity-light.webp](../contribution-graphs/activity-light3.webp#gh-light-mode-only)](../contribution-graphs/activity-light.webp#gh-light-mode-only)
+```
+
+活動統計の入力はActionsキャッシュだけに保存します。キャッシュキーはユーザー名とUTCのISO週（年＋週番号）です。同じ週は再取得せず、週が変わったら更新します。画像には取得日を表示します。API応答やキャッシュJSONを画像ブランチへコピーしません。既存の草マップ用CSV・JSONの出力設定はそのままです。
