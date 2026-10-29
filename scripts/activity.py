@@ -251,7 +251,7 @@ def render(model, theme='light', preview=False):
     def row(x, y, name, label, value, color, suffix=''):
         value = f'{value:,}' if isinstance(value, int) else escape(str(value))
         parts.append(f'<g transform="translate({x},{y-15}) scale(.75)" fill="none" stroke="{colors[color]}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</g>')
-        parts.append(f'<text x="{x+29}" y="{y}" font-size="19">{escape(label)} <tspan font-weight="700" font-size="26">{value}</tspan>{escape(suffix)}</text>')
+        parts.append(f'<text x="{x+29}" y="{y}" font-size="22">{escape(label)} <tspan font-weight="700" font-size="31">{value}</tspan>{escape(suffix)}</text>')
     parts.append(f'<image x="32" y="32" width="52" height="52" clip-path="url(#avatar)" xlink:href="{escape(model["avatar"], quote=True)}"/>')
     text(100, 52, model['user'], 22, extra='font-weight="700"')
     text(100, 77, 'GitHub activity', 14, muted)
