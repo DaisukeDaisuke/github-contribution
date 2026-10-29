@@ -3,96 +3,66 @@
 <desc id="desc">Public pull requests, issues, reviewed pull requests, repositories and language distribution.</desc>
 <defs><clipPath id="avatar"><circle cx="58" cy="58" r="26"/></clipPath><linearGradient id="fade" x2="0" y2="1"><stop offset="0" stop-color="white"/><stop offset="1" stop-color="black"/></linearGradient><mask id="preview"><rect width="800" height="450" fill="white"/><rect y="450" width="800" height="150" fill="url(#fade)"/></mask></defs>
 <g font-family="Liberation Sans, Arial, sans-serif" fill="#1f2328" mask="url(#preview)">
-<rect x=".5" y=".5" width="799" height="799" rx="18" fill="#ffffff" stroke="#d1d9e0"/>
+<rect x=".5" y=".5" width="799" height="639" rx="18" fill="#ffffff" stroke="#d1d9e0"/>
 <image x="32" y="32" width="52" height="52" clip-path="url(#avatar)" xlink:href="data:image/png;base64,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"/>
 <text x="100" y="52" font-size="22" fill="#1f2328" font-weight="700">DaisukeDaisuke</text>
 <text x="100" y="77" font-size="14" fill="#59636e" >GitHub activity</text>
 <text x="768" y="49" font-size="12" fill="#59636e" text-anchor="end">2026-10-29</text>
 <text x="768" y="72" font-size="12" fill="#59636e" text-anchor="end">Public data</text>
-<rect x="32" y="110" width="356" height="234" rx="12" fill="#f6f8fa" stroke="#d1d9e0"/>
-<text x="52" y="141" font-size="17" fill="#0969da" font-weight="600">Pull requests</text>
-<text x="52" y="162" font-size="11" fill="#59636e" >Authored · all time</text>
-<rect x="412" y="110" width="356" height="234" rx="12" fill="#f6f8fa" stroke="#d1d9e0"/>
-<text x="432" y="141" font-size="17" fill="#0969da" font-weight="600">Issues &amp; reviews</text>
-<text x="432" y="162" font-size="11" fill="#59636e" >Authored issues · all time</text>
-<g transform="translate(52,183) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M14 4h2a3 3 0 0 1 3 3v11M14 4l3-3M14 4l3 3"/><circle cx="19" cy="20" r="2"/></g>
-<text x="81" y="198" font-size="14" fill="#1f2328" >Created</text>
-<text x="366" y="198" font-size="17" fill="#1f2328" text-anchor="end" font-weight="600">145</text>
-<g transform="translate(52,221) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M14 4h2a3 3 0 0 1 3 3v11M14 4l3-3M14 4l3 3"/><circle cx="19" cy="20" r="2"/></g>
-<text x="81" y="236" font-size="14" fill="#1f2328" >Merged</text>
-<text x="366" y="236" font-size="17" fill="#1f2328" text-anchor="end" font-weight="600">102</text>
-<g transform="translate(52,259) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M14 4h2a3 3 0 0 1 3 3v11M14 4l3-3M14 4l3 3"/><circle cx="19" cy="20" r="2"/></g>
-<text x="81" y="274" font-size="14" fill="#1f2328" >Open</text>
-<text x="366" y="274" font-size="17" fill="#1f2328" text-anchor="end" font-weight="600">15</text>
-<g transform="translate(52,297) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M14 4h2a3 3 0 0 1 3 3v11M14 4l3-3M14 4l3 3"/><circle cx="19" cy="20" r="2"/></g>
-<text x="81" y="312" font-size="14" fill="#1f2328" >Closed, unmerged</text>
-<text x="366" y="312" font-size="17" fill="#1f2328" text-anchor="end" font-weight="600">28</text>
-<g transform="translate(432,183) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16v1"/></g>
-<text x="461" y="198" font-size="14" fill="#1f2328" >Issues created</text>
-<text x="746" y="198" font-size="17" fill="#1f2328" text-anchor="end" font-weight="600">159</text>
-<g transform="translate(432,221) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16v1"/></g>
-<text x="461" y="236" font-size="14" fill="#1f2328" >Issues open</text>
-<text x="746" y="236" font-size="17" fill="#1f2328" text-anchor="end" font-weight="600">75</text>
-<g transform="translate(432,259) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16v1"/></g>
-<text x="461" y="274" font-size="14" fill="#1f2328" >Issues closed</text>
-<text x="746" y="274" font-size="17" fill="#1f2328" text-anchor="end" font-weight="600">84</text>
-<g transform="translate(432,297) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v13H9l-4 4zM9 9l2 2 4-4"/></g>
-<text x="461" y="312" font-size="14" fill="#1f2328" >PRs reviewed</text>
-<text x="746" y="312" font-size="17" fill="#1f2328" text-anchor="end" font-weight="600">17</text>
-<text x="32" y="385" font-size="18" fill="#0969da" font-weight="600">Repositories &amp; community</text>
-<text x="32" y="407" font-size="12" fill="#59636e" >Owned · public · forks excluded</text>
-<g transform="translate(32,427) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M5 17h14M9 7h6"/></g>
-<text x="61" y="442" font-size="14" fill="#1f2328" >Repositories</text>
-<text x="346" y="442" font-size="17" fill="#1f2328" text-anchor="end" font-weight="600">63</text>
-<g transform="translate(412,427) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></g>
-<text x="441" y="442" font-size="14" fill="#1f2328" >Stars received</text>
-<text x="726" y="442" font-size="17" fill="#1f2328" text-anchor="end" font-weight="600">126</text>
-<g transform="translate(32,465) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16v13H4zM3 3h18v5H3zM9 12h6"/></g>
-<text x="61" y="480" font-size="14" fill="#1f2328" >Archived</text>
-<text x="346" y="480" font-size="17" fill="#1f2328" text-anchor="end" font-weight="600">5</text>
-<g transform="translate(412,465) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="18" cy="4" r="2"/><circle cx="12" cy="20" r="2"/><path d="M6 6v3c0 4 12 4 12 0V6M12 12v6"/></g>
-<text x="441" y="480" font-size="14" fill="#1f2328" >Forks received</text>
-<text x="726" y="480" font-size="17" fill="#1f2328" text-anchor="end" font-weight="600">30</text>
-<g transform="translate(32,503) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 12 9-9h8v8l-9 10z"/><circle cx="16" cy="7" r="1"/></g>
-<text x="61" y="518" font-size="14" fill="#1f2328" >Releases</text>
-<text x="346" y="518" font-size="17" fill="#1f2328" text-anchor="end" font-weight="600">110</text>
-<g transform="translate(412,503) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M16 4a3 3 0 0 1 0 6M18 14a6 6 0 0 1 4 7"/></g>
-<text x="441" y="518" font-size="14" fill="#1f2328" >Followers</text>
-<text x="726" y="518" font-size="17" fill="#1f2328" text-anchor="end" font-weight="600">70</text>
-<path d="M32 544H768" stroke="#d1d9e0"/>
-<text x="32" y="580" font-size="18" fill="#0969da" font-weight="600">Language distribution</text>
-<rect x="32.000" y="603" width="528.039" height="12" fill="#f1e05a"/>
-<rect x="560.039" y="603" width="91.621" height="12" fill="#e34c26"/>
-<rect x="651.659" y="603" width="50.464" height="12" fill="#4F5D95"/>
-<rect x="702.123" y="603" width="27.527" height="12" fill="#f34b7d"/>
-<rect x="729.651" y="603" width="13.713" height="12" fill="#3572A5"/>
-<rect x="743.364" y="603" width="6.933" height="12" fill="#7355dd"/>
-<rect x="750.297" y="603" width="5.921" height="12" fill="#000080"/>
-<rect x="756.218" y="603" width="11.782" height="12" fill="#8b949e"/>
-<circle cx="37" cy="640" r="4" fill="#f1e05a"/>
-<text x="50" y="645" font-size="13" fill="#1f2328" >JavaScript</text>
-<text x="388" y="645" font-size="13" fill="#59636e" text-anchor="end">71.7%</text>
-<circle cx="417" cy="640" r="4" fill="#e34c26"/>
-<text x="430" y="645" font-size="13" fill="#1f2328" >HTML</text>
-<text x="768" y="645" font-size="13" fill="#59636e" text-anchor="end">12.4%</text>
-<circle cx="37" cy="665" r="4" fill="#4F5D95"/>
-<text x="50" y="670" font-size="13" fill="#1f2328" >PHP</text>
-<text x="388" y="670" font-size="13" fill="#59636e" text-anchor="end">6.9%</text>
-<circle cx="417" cy="665" r="4" fill="#f34b7d"/>
-<text x="430" y="670" font-size="13" fill="#1f2328" >C++</text>
-<text x="768" y="670" font-size="13" fill="#59636e" text-anchor="end">3.7%</text>
-<circle cx="37" cy="690" r="4" fill="#3572A5"/>
-<text x="50" y="695" font-size="13" fill="#1f2328" >Python</text>
-<text x="388" y="695" font-size="13" fill="#59636e" text-anchor="end">1.9%</text>
-<circle cx="417" cy="690" r="4" fill="#7355dd"/>
-<text x="430" y="695" font-size="13" fill="#1f2328" >C#</text>
-<text x="768" y="695" font-size="13" fill="#59636e" text-anchor="end">0.9%</text>
-<circle cx="37" cy="715" r="4" fill="#000080"/>
-<text x="50" y="720" font-size="13" fill="#1f2328" >Lua</text>
-<text x="388" y="720" font-size="13" fill="#59636e" text-anchor="end">0.8%</text>
-<circle cx="417" cy="715" r="4" fill="#8b949e"/>
-<text x="430" y="720" font-size="13" fill="#1f2328" >Other languages</text>
-<text x="768" y="720" font-size="13" fill="#59636e" text-anchor="end">1.6%</text>
-<text x="32" y="755" font-size="11" fill="#59636e" >Language bytes across 63 / 63 public, non-fork repositories.</text>
-<text x="32" y="775" font-size="11" fill="#59636e" >Repository contents, not personal lines of code. Reviews count distinct PRs.</text>
+<g transform="translate(32,125) scale(.75)" fill="none" stroke="#1a7f37" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M14 4h2a3 3 0 0 1 3 3v11M14 4l3-3M14 4l3 3"/><circle cx="19" cy="20" r="2"/></g>
+<text x="61" y="140" font-size="15">PRs created <tspan font-weight="600">145</tspan></text>
+<g transform="translate(412,125) scale(.75)" fill="none" stroke="#1a7f37" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16v1"/></g>
+<text x="441" y="140" font-size="15">Issues created <tspan font-weight="600">159</tspan></text>
+<g transform="translate(32,161) scale(.75)" fill="none" stroke="#1a7f37" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M14 4h2a3 3 0 0 1 3 3v11M14 4l3-3M14 4l3 3"/><circle cx="19" cy="20" r="2"/></g>
+<text x="61" y="176" font-size="15">PRs open <tspan font-weight="600">15</tspan></text>
+<g transform="translate(412,161) scale(.75)" fill="none" stroke="#1a7f37" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16v1"/></g>
+<text x="441" y="176" font-size="15">Issues open <tspan font-weight="600">75</tspan></text>
+<g transform="translate(32,197) scale(.75)" fill="none" stroke="#8250df" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M14 4h2a3 3 0 0 1 3 3v11M14 4l3-3M14 4l3 3"/><circle cx="19" cy="20" r="2"/></g>
+<text x="61" y="212" font-size="15">PRs merged <tspan font-weight="600">102</tspan></text>
+<g transform="translate(412,197) scale(.75)" fill="none" stroke="#8250df" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16v1"/></g>
+<text x="441" y="212" font-size="15">Issues closed <tspan font-weight="600">84</tspan></text>
+<g transform="translate(32,233) scale(.75)" fill="none" stroke="#8250df" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M14 4h2a3 3 0 0 1 3 3v11M14 4l3-3M14 4l3 3"/><circle cx="19" cy="20" r="2"/></g>
+<text x="61" y="248" font-size="15">PRs closed, unmerged <tspan font-weight="600">28</tspan></text>
+<g transform="translate(412,233) scale(.75)" fill="none" stroke="#0969da" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v13H9l-4 4zM9 9l2 2 4-4"/></g>
+<text x="441" y="248" font-size="15">PRs reviewed <tspan font-weight="600">17</tspan></text>
+<g transform="translate(32,269) scale(.75)" fill="none" stroke="#0969da" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M5 17h14M9 7h6"/></g>
+<text x="61" y="284" font-size="15">Repositories <tspan font-weight="600">63</tspan></text>
+<g transform="translate(412,269) scale(.75)" fill="none" stroke="#9a6700" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></g>
+<text x="441" y="284" font-size="15">Stars received <tspan font-weight="600">126</tspan></text>
+<g transform="translate(32,305) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16v13H4zM3 3h18v5H3zM9 12h6"/></g>
+<text x="61" y="320" font-size="15">Archived repositories <tspan font-weight="600">5</tspan></text>
+<g transform="translate(412,305) scale(.75)" fill="none" stroke="#0969da" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="18" cy="4" r="2"/><circle cx="12" cy="20" r="2"/><path d="M6 6v3c0 4 12 4 12 0V6M12 12v6"/></g>
+<text x="441" y="320" font-size="15">Forks received <tspan font-weight="600">30</tspan></text>
+<g transform="translate(32,341) scale(.75)" fill="none" stroke="#0969da" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 12 9-9h8v8l-9 10z"/><circle cx="16" cy="7" r="1"/></g>
+<text x="61" y="356" font-size="15">Releases <tspan font-weight="600">110</tspan></text>
+<g transform="translate(412,341) scale(.75)" fill="none" stroke="#8250df" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M16 4a3 3 0 0 1 0 6M18 14a6 6 0 0 1 4 7"/></g>
+<text x="441" y="356" font-size="15">Followers <tspan font-weight="600">70</tspan></text>
+<path d="M32 383H768" stroke="#d1d9e0"/>
+<text x="32" y="417" font-size="18" fill="#0969da" font-weight="600">Language distribution</text>
+<rect x="32.000" y="439" width="528.039" height="12" fill="#f1e05a"/>
+<rect x="560.039" y="439" width="91.621" height="12" fill="#e34c26"/>
+<rect x="651.659" y="439" width="50.464" height="12" fill="#4F5D95"/>
+<rect x="702.123" y="439" width="27.527" height="12" fill="#f34b7d"/>
+<rect x="729.651" y="439" width="13.713" height="12" fill="#3572A5"/>
+<rect x="743.364" y="439" width="6.933" height="12" fill="#7355dd"/>
+<rect x="750.297" y="439" width="5.921" height="12" fill="#000080"/>
+<rect x="756.218" y="439" width="11.782" height="12" fill="#8b949e"/>
+<circle cx="37" cy="475" r="4" fill="#f1e05a"/>
+<text x="50" y="480" font-size="13">JavaScript <tspan fill="#59636e">71.7%</tspan></text>
+<circle cx="417" cy="475" r="4" fill="#e34c26"/>
+<text x="430" y="480" font-size="13">HTML <tspan fill="#59636e">12.4%</tspan></text>
+<circle cx="37" cy="500" r="4" fill="#4F5D95"/>
+<text x="50" y="505" font-size="13">PHP <tspan fill="#59636e">6.9%</tspan></text>
+<circle cx="417" cy="500" r="4" fill="#f34b7d"/>
+<text x="430" y="505" font-size="13">C++ <tspan fill="#59636e">3.7%</tspan></text>
+<circle cx="37" cy="525" r="4" fill="#3572A5"/>
+<text x="50" y="530" font-size="13">Python <tspan fill="#59636e">1.9%</tspan></text>
+<circle cx="417" cy="525" r="4" fill="#7355dd"/>
+<text x="430" y="530" font-size="13">C# <tspan fill="#59636e">0.9%</tspan></text>
+<circle cx="37" cy="550" r="4" fill="#000080"/>
+<text x="50" y="555" font-size="13">Lua <tspan fill="#59636e">0.8%</tspan></text>
+<circle cx="417" cy="550" r="4" fill="#8b949e"/>
+<text x="430" y="555" font-size="13">Other languages <tspan fill="#59636e">1.6%</tspan></text>
+<text x="32" y="602" font-size="11" fill="#59636e" >Language bytes across 63 / 63 public, non-fork repositories.</text>
+<text x="32" y="621" font-size="11" fill="#59636e" >PRs / issues: authored, all time. Reviews: distinct PRs. Repositories: owned, public, non-fork.</text>
 </g></svg>
