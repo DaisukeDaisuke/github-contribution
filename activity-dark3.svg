@@ -62,6 +62,4 @@
 <text x="50" y="555" font-size="13">C# <tspan fill="#9da7b3">0.6%</tspan></text>
 <circle cx="417" cy="550" r="4" fill="#8b949e"/>
 <text x="430" y="555" font-size="13">Other languages <tspan fill="#9da7b3">1.3%</tspan></text>
-<text x="32" y="602" font-size="11" fill="#9da7b3" >Language bytes across 96 / 96 token-accessible, non-fork repositories.</text>
-<text x="32" y="621" font-size="11" fill="#9da7b3" >PRs / issues: authored. Reviews: distinct PRs. Repositories: owned / collaborator / organization, non-fork.</text>
 </g></svg>
