@@ -141,7 +141,8 @@ class ActivityTests(unittest.TestCase):
             for field in ('object(', 'text', 'blob', 'tree', 'contents', 'nameWithOwner'):
                 self.assertNotIn(field,calls[1])
             self.assertEqual(private['scope'],'accessible')
-            self.assertIn('token-accessible',activity.render(private))
+            self.assertNotIn('Language bytes across',activity.render(private))
+            self.assertNotIn('PRs / issues:',activity.render(private))
             activity.collect('OtherUser','token',tmp,'2031-01-01',request,avatar)
             self.assertEqual(len(calls),2)
             saved=(Path(tmp)/'accessible/otheruser/snapshot.json').read_text()

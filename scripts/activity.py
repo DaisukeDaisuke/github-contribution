@@ -238,10 +238,8 @@ def render(model, theme='light', preview=False):
         color = item['color'] if re.fullmatch(r'#[0-9a-fA-F]{6}', item['color']) else '#8b949e'
         parts.append(f'<circle cx="{x+5}" cy="{y-5}" r="4" fill="{color}"/>')
         parts.append(f'<text x="{x+18}" y="{y}" font-size="13">{escape(item["name"])} <tspan fill="{muted}">{100*item["size"]/total:.1f}%</tspan></text>')
-    scope_label = 'token-accessible' if model.get('scope') == 'accessible' else 'public'
-    text(32, 602, f'{"PARTIAL SAMPLE · " if model["partial"] else ""}Language bytes across {model["sampled"]:,} / {model["repositories"]:,} {scope_label}, non-fork repositories.', 11, muted)
-    repository_scope = 'owned / collaborator / organization, non-fork' if model.get('scope') == 'accessible' else 'owned, non-fork'
-    text(32, 621, 'PRs / issues: authored. Reviews: distinct PRs. Repositories: ' + repository_scope + '.', 11, muted)
+    if model['partial']:
+        text(32, 602, f'PARTIAL SAMPLE · {model["sampled"]:,} / {model["repositories"]:,}', 11, muted)
     parts.append('</g></svg>')
     return '\n'.join(parts)
 
