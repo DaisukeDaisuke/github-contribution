@@ -108,11 +108,18 @@ class ActivityTests(unittest.TestCase):
                 for suffix in ('','3'):
                     self.assertEqual((dist/f'profile-{theme}{suffix}.svg').read_text(),'unchanged original')
                     svg=ET.fromstring((dist/f'activity-{theme}{suffix}.svg').read_text())
-                    self.assertEqual(svg.attrib['height'],'600' if suffix else '800')
+                    self.assertEqual(svg.attrib['height'],'600' if suffix else '640')
             self.assertFalse(list(dist.glob('*.json')))
             embed=(dist/'embed.md').read_text()
             self.assertIn('[![activity-dark.webp](/../images/activity-dark3.webp#gh-dark-mode-only)](/../images/activity-dark.webp#gh-dark-mode-only)',embed)
             self.assertNotIn('Daisuke',embed)
+            light=(dist/'activity-light.svg').read_text()
+            self.assertIn('PRs created <tspan font-weight="600">6</tspan>',light)
+            self.assertIn('stroke="#1a7f37"',light)
+            self.assertIn('stroke="#8250df"',light)
+            self.assertNotIn('Authored · all time',light)
+            self.assertNotIn('Repositories &amp; community',light)
+
 
     def test_zero_data_and_escaping(self):
         with tempfile.TemporaryDirectory() as tmp:

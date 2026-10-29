@@ -146,46 +146,47 @@ ICONS = {
 def render(model, theme='light', preview=False):
     dark = theme == 'dark'
     bg, panel, fg, muted, border, accent = ('#0d1117', '#161b22', '#e6edf3', '#9da7b3', '#30363d', '#79c0ff') if dark else ('#ffffff', '#f6f8fa', '#1f2328', '#59636e', '#d1d9e0', '#0969da')
-    height = 600 if preview else 800
+    height = 600 if preview else 640
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="{height}" viewBox="0 0 800 {height}" role="img" aria-labelledby="title desc">',
              f'<title id="title">{escape(model["user"])} · GitHub activity</title>',
              '<desc id="desc">Public pull requests, issues, reviewed pull requests, repositories and language distribution.</desc>',
              '<defs><clipPath id="avatar"><circle cx="58" cy="58" r="26"/></clipPath><linearGradient id="fade" x2="0" y2="1"><stop offset="0" stop-color="white"/><stop offset="1" stop-color="black"/></linearGradient><mask id="preview"><rect width="800" height="450" fill="white"/><rect y="450" width="800" height="150" fill="url(#fade)"/></mask></defs>',
              f'<g font-family="Liberation Sans, Arial, sans-serif" fill="{fg}"' + (' mask="url(#preview)"' if preview else '') + '>',
-             f'<rect x=".5" y=".5" width="799" height="799" rx="18" fill="{bg}" stroke="{border}"/>']
+             f'<rect x=".5" y=".5" width="799" height="639" rx="18" fill="{bg}" stroke="{border}"/>']
     def text(x, y, value, size=14, color=None, extra=''):
         parts.append(f'<text x="{x}" y="{y}" font-size="{size}" fill="{color or fg}" {extra}>{escape(str(value))}</text>')
-    def icon(name, x, y):
-        parts.append(f'<g transform="translate({x},{y}) scale(.75)" fill="none" stroke="{muted}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</g>')
-    def row(x, y, name, label, value):
-        icon(name, x, y - 15)
-        text(x + 29, y, label)
-        text(x + 314, y, f'{value:,}', 17, extra='text-anchor="end" font-weight="600"')
-    def card(x, y, title, subtitle):
-        parts.append(f'<rect x="{x}" y="{y}" width="356" height="234" rx="12" fill="{panel}" stroke="{border}"/>')
-        text(x + 20, y + 31, title, 17, accent, 'font-weight="600"')
-        text(x + 20, y + 52, subtitle, 11, muted)
+    colors = {'green': '#3fb950' if dark else '#1a7f37',
+              'purple': '#bc8cff' if dark else '#8250df',
+              'blue': accent, 'gold': '#e3b341' if dark else '#9a6700', 'muted': muted}
+    def row(x, y, name, label, value, color):
+        parts.append(f'<g transform="translate({x},{y-15}) scale(.75)" fill="none" stroke="{colors[color]}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</g>')
+        parts.append(f'<text x="{x+29}" y="{y}" font-size="15">{escape(label)} <tspan font-weight="600">{value:,}</tspan></text>')
     parts.append(f'<image x="32" y="32" width="52" height="52" clip-path="url(#avatar)" xlink:href="{escape(model["avatar"], quote=True)}"/>')
     text(100, 52, model['user'], 22, extra='font-weight="700"')
     text(100, 77, 'GitHub activity', 14, muted)
     text(768, 49, model['date'], 12, muted, 'text-anchor="end"')
     text(768, 72, 'Public data', 12, muted, 'text-anchor="end"')
     c = model['counts']
-    card(32, 110, 'Pull requests', 'Authored · all time')
-    card(412, 110, 'Issues & reviews', 'Authored issues · all time')
-    for i, (label, value) in enumerate([('Created', c['prOpen']+c['prMerged']+c['prClosed']), ('Merged', c['prMerged']), ('Open', c['prOpen']), ('Closed, unmerged', c['prClosed'])]):
-        row(52, 198 + i*38, 'pr', label, value)
-    for i, (kind, label, value) in enumerate([('issue','Issues created', c['issueOpen']+c['issueClosed']), ('issue','Issues open',c['issueOpen']), ('issue','Issues closed',c['issueClosed']), ('review','PRs reviewed',c['reviewed'])]):
-        row(432, 198+i*38, kind, label, value)
-    text(32, 385, 'Repositories & community', 18, accent, 'font-weight="600"')
-    text(32, 407, 'Owned · public · forks excluded' + (' · PARTIAL SAMPLE' if model['partial'] else ''), 12, muted)
-    items = [('repo','Repositories',model['repositories']), ('star','Stars received',model['stars']),
-             ('archive','Archived',model['archived']), ('fork','Forks received',model['forks']),
-             ('release','Releases',model['releases']), ('people','Followers',model['followers'])]
-    for i, (kind,label,value) in enumerate(items):
-        row(32 + i%2*380, 442+i//2*38, kind,label,value)
-    parts.append(f'<path d="M32 544H768" stroke="{border}"/>')
-    text(32, 580, 'Language distribution', 18, accent, 'font-weight="600"')
+    items = [
+        ('pr', 'PRs created', c['prOpen']+c['prMerged']+c['prClosed'], 'green'),
+        ('issue', 'Issues created', c['issueOpen']+c['issueClosed'], 'green'),
+        ('pr', 'PRs open', c['prOpen'], 'green'),
+        ('issue', 'Issues open', c['issueOpen'], 'green'),
+        ('pr', 'PRs merged', c['prMerged'], 'purple'),
+        ('issue', 'Issues closed', c['issueClosed'], 'purple'),
+        ('pr', 'PRs closed, unmerged', c['prClosed'], 'purple'),
+        ('review', 'PRs reviewed', c['reviewed'], 'blue'),
+        ('repo', 'Repositories', model['repositories'], 'blue'),
+        ('star', 'Stars received', model['stars'], 'gold'),
+        ('archive', 'Archived repositories', model['archived'], 'muted'),
+        ('fork', 'Forks received', model['forks'], 'blue'),
+        ('release', 'Releases', model['releases'], 'blue'),
+        ('people', 'Followers', model['followers'], 'purple'),
+    ]
+    for i, (kind, label, value, color) in enumerate(items):
+        row(32 + i%2*380, 140+i//2*36, kind, label, value, color)
+    parts.append(f'<path d="M32 383H768" stroke="{border}"/>')
+    text(32, 417, 'Language distribution', 18, accent, 'font-weight="600"')
     languages = model['languages']
     total = sum(l['size'] for l in languages)
     top = [dict(l) for l in languages[:7]]
@@ -195,18 +196,17 @@ def render(model, theme='light', preview=False):
     for item in top:
         color = item['color'] if re.fullmatch(r'#[0-9a-fA-F]{6}', item['color']) else '#8b949e'
         width = 736 * item['size'] / total
-        parts.append(f'<rect x="{x:.3f}" y="603" width="{width:.3f}" height="12" fill="{color}"/>')
+        parts.append(f'<rect x="{x:.3f}" y="439" width="{width:.3f}" height="12" fill="{color}"/>')
         x += width
     if not top:
-        text(32, 615, 'No detected languages', 14, muted)
+        text(32, 457, 'No detected languages', 14, muted)
     for i, item in enumerate(top):
-        x, y = 32 + i%2*380, 645+i//2*25
+        x, y = 32 + i%2*380, 480+i//2*25
         color = item['color'] if re.fullmatch(r'#[0-9a-fA-F]{6}', item['color']) else '#8b949e'
         parts.append(f'<circle cx="{x+5}" cy="{y-5}" r="4" fill="{color}"/>')
-        text(x+18, y, item['name'], 13)
-        text(x+356, y, f'{100*item["size"]/total:.1f}%', 13, muted, 'text-anchor="end"')
-    text(32, 755, f'Language bytes across {model["sampled"]:,} / {model["repositories"]:,} public, non-fork repositories.', 11, muted)
-    text(32, 775, 'Repository contents, not personal lines of code. Reviews count distinct PRs.', 11, muted)
+        parts.append(f'<text x="{x+18}" y="{y}" font-size="13">{escape(item["name"])} <tspan fill="{muted}">{100*item["size"]/total:.1f}%</tspan></text>')
+    text(32, 602, f'{"PARTIAL SAMPLE · " if model["partial"] else ""}Language bytes across {model["sampled"]:,} / {model["repositories"]:,} public, non-fork repositories.', 11, muted)
+    text(32, 621, 'PRs / issues: authored, all time. Reviews: distinct PRs. Repositories: owned, public, non-fork.', 11, muted)
     parts.append('</g></svg>')
     return '\n'.join(parts)
 
