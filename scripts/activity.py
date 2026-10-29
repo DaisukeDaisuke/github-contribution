@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 
 from generate import request_json
 
-SCHEMA = 2
+SCHEMA = 3
 MAX_PAGES = 49  # At most 49 GraphQL calls + one avatar download.
 REPOSITORIES = '''repositories(first: 100, after: $cursor, ownerAffiliations: [OWNER],
   privacy: PUBLIC, isFork: false, orderBy: {field: NAME, direction: ASC}) {
@@ -38,12 +38,14 @@ FILTERS = {
 }
 
 
-def query(user, first):
-    searches = '\n'.join(f'{key}: search(type: ISSUE, first: 1, query: "is:public {value}{user}") {{issueCount}}'
+def query(user, first, include_private=False):
+    visibility = '' if include_private else 'is:public '
+    repositories = REPOSITORIES.replace('privacy: PUBLIC, ', '') if include_private else REPOSITORIES
+    searches = '\n'.join(f'{key}: search(type: ISSUE, first: 1, query: "{visibility}{value}{user}") {{issueCount}}'
                          for key, value in FILTERS.items()) if first else ''
     identity = 'login avatarUrl(size: 128) followers {totalCount}' if first else 'login'
     return f'''query Activity($login: String!, $cursor: String) {{
-      user(login: $login) {{ {identity} {REPOSITORIES} }}
+      user(login: $login) {{ {identity} {repositories} }}
       {searches}
       rateLimit {{remaining cost}}
     }}'''
@@ -64,13 +66,14 @@ def fetch_avatar(url):
     return f'data:{content_type};base64,' + base64.b64encode(data).decode('ascii')
 
 
-def collect(user, token, cache_dir, today=None, request=request_json, avatar=fetch_avatar):
+def collect(user, token, cache_dir, today=None, request=request_json, avatar=fetch_avatar, *, include_private=False):
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9-]{0,38}', user):
         raise ValueError('Invalid user name')
     today = today or dt.datetime.now(dt.timezone.utc).date().isoformat()
-    file = Path(cache_dir) / user.lower() / 'snapshot.json'
+    scope = 'accessible' if include_private else 'public'
+    file = Path(cache_dir) / scope / user.lower() / 'snapshot.json'
     previous = json.loads(file.read_text(encoding='utf-8')) if file.exists() else {}
-    same_owner = previous.get('schema') == SCHEMA and previous.get('user', '').lower() == user.lower()
+    same_owner = previous.get('schema') == SCHEMA and previous.get('user', '').lower() == user.lower() and previous.get('scope') == scope
     week = dt.date.fromisoformat(today).strftime('%G-W%V')
     if same_owner and previous.get('week') == week:
         print('Activity snapshot: weekly Actions cache hit; 0 API requests.')
@@ -80,7 +83,7 @@ def collect(user, token, cache_dir, today=None, request=request_json, avatar=fet
     cursor, seen, repos, model = None, set(), [], {}
     for page in range(MAX_PAGES):
         raw, _ = request('https://api.github.com/graphql', token=token, body={
-            'query': query(user, page == 0), 'variables': {'login': user, 'cursor': cursor}})
+            'query': query(user, page == 0, include_private), 'variables': {'login': user, 'cursor': cursor}})
         if raw.get('errors'):
             raise RuntimeError('Activity GraphQL failed: ' + '; '.join(e.get('message', 'error') for e in raw['errors']))
         data = raw['data']
@@ -88,7 +91,7 @@ def collect(user, token, cache_dir, today=None, request=request_json, avatar=fet
         if not account or account['login'].lower() != user.lower():
             raise ValueError('Activity account mismatch or missing account')
         if page == 0:
-            model = {'schema': SCHEMA, 'user': account['login'], 'date': today, 'week': week,
+            model = {'schema': SCHEMA, 'scope': scope, 'user': account['login'], 'date': today, 'week': week,
                      'counts': {key: data[key]['issueCount'] for key in FILTERS},
                      'followers': account['followers']['totalCount'],
                      'avatarUrl': account['avatarUrl']}
@@ -126,7 +129,7 @@ def collect(user, token, cache_dir, today=None, request=request_json, avatar=fet
     file.parent.mkdir(parents=True, exist_ok=True)
     file.write_text(json.dumps(model, ensure_ascii=False), encoding='utf-8')
     print(f'Activity: {page + 1} GraphQL request(s), {0 if cached_avatar else 1} avatar download; '
-          f'{len(repos)}/{model["repositories"]} public non-fork repositories.')
+          f'{len(repos)}/{model["repositories"]} {scope} non-fork repositories.')
     return model
 
 
@@ -160,12 +163,11 @@ def render(model, theme='light', preview=False):
               'blue': accent, 'gold': '#e3b341' if dark else '#9a6700', 'muted': muted}
     def row(x, y, name, label, value, color):
         parts.append(f'<g transform="translate({x},{y-15}) scale(.75)" fill="none" stroke="{colors[color]}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</g>')
-        parts.append(f'<text x="{x+29}" y="{y}" font-size="15">{escape(label)} <tspan font-weight="600">{value:,}</tspan></text>')
+        parts.append(f'<text x="{x+29}" y="{y}" font-size="15">{escape(label)} <tspan font-weight="700" font-size="20">{value:,}</tspan></text>')
     parts.append(f'<image x="32" y="32" width="52" height="52" clip-path="url(#avatar)" xlink:href="{escape(model["avatar"], quote=True)}"/>')
     text(100, 52, model['user'], 22, extra='font-weight="700"')
     text(100, 77, 'GitHub activity', 14, muted)
     text(768, 49, model['date'], 12, muted, 'text-anchor="end"')
-    text(768, 72, 'Public data', 12, muted, 'text-anchor="end"')
     c = model['counts']
     items = [
         ('pr', 'PRs created', c['prOpen']+c['prMerged']+c['prClosed'], 'green'),
@@ -205,8 +207,9 @@ def render(model, theme='light', preview=False):
         color = item['color'] if re.fullmatch(r'#[0-9a-fA-F]{6}', item['color']) else '#8b949e'
         parts.append(f'<circle cx="{x+5}" cy="{y-5}" r="4" fill="{color}"/>')
         parts.append(f'<text x="{x+18}" y="{y}" font-size="13">{escape(item["name"])} <tspan fill="{muted}">{100*item["size"]/total:.1f}%</tspan></text>')
-    text(32, 602, f'{"PARTIAL SAMPLE · " if model["partial"] else ""}Language bytes across {model["sampled"]:,} / {model["repositories"]:,} public, non-fork repositories.', 11, muted)
-    text(32, 621, 'PRs / issues: authored, all time. Reviews: distinct PRs. Repositories: owned, public, non-fork.', 11, muted)
+    scope_label = 'token-accessible' if model.get('scope') == 'accessible' else 'public'
+    text(32, 602, f'{"PARTIAL SAMPLE · " if model["partial"] else ""}Language bytes across {model["sampled"]:,} / {model["repositories"]:,} {scope_label}, non-fork repositories.', 11, muted)
+    text(32, 621, 'PRs / issues: authored, all time. Reviews: distinct PRs. Repositories: owned, non-fork.', 11, muted)
     parts.append('</g></svg>')
     return '\n'.join(parts)
 
@@ -254,7 +257,7 @@ def main():
         parser.error('--user or CONTRIBUTION_USER is required')
     # Also space this process's first call from the preceding workflow step.
     time.sleep(1.2)
-    model = collect(args.user, os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN'), args.cache_dir)
+    model = collect(args.user, os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN'), args.cache_dir, include_private=os.environ.get('ACTIVITY_SCOPE') == 'accessible')
     write_outputs(model,args.directory,os.environ.get('GITHUB_REPOSITORY',''),os.environ.get('OUTPUT_BRANCH','contribution-graphs'))
 
 

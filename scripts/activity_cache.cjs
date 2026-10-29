@@ -9,7 +9,8 @@ module.exports = async function ({core, cache}, mode) {
   }
   const user = (process.env.CONTRIBUTION_USER || '').toLowerCase();
   if (!/^[a-z0-9][a-z0-9-]{0,38}$/.test(user)) throw new Error('Invalid activity user');
-  const prefix = `activity-v2-${user}-`;
+  const scope = process.env.ACTIVITY_SCOPE === 'accessible' ? 'accessible' : 'public';
+  const prefix = `activity-v3-${scope}-${user}-`;
   // ISO week: Thursday determines the week-year, including New Year boundaries.
   const date = new Date();
   date.setUTCHours(0, 0, 0, 0);
@@ -17,7 +18,7 @@ module.exports = async function ({core, cache}, mode) {
   const year = date.getUTCFullYear();
   const week = Math.ceil(((date - new Date(Date.UTC(year, 0, 1))) / 86400000 + 1) / 7);
   const key = prefix + `${year}-W${String(week).padStart(2, '0')}`;
-  const file = `.cache/activity/${user}/snapshot.json`;
+  const file = `.cache/activity/${scope}/${user}/snapshot.json`;
   const matched = await cache.restoreCache([file], key, [prefix]);
   fs.mkdirSync('.cache', {recursive: true});
   fs.writeFileSync(planFile, JSON.stringify({file, key, hit: matched === key}), 'utf8');

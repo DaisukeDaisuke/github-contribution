@@ -37,6 +37,7 @@ jobs:
       START_YEAR: ${{ vars.START_YEAR }}
       OUTPUT_BRANCH: contribution-graphs
       CONTRIBUTION_SOURCE: ${{ vars.CONTRIBUTION_SOURCE || 'auto' }}
+      ACTIVITY_SCOPE: ${{ secrets.ACTIVITY_TOKEN != '' && 'accessible' || 'public' }}
     steps:
       - name: Check out the template source
         uses: actions/checkout@v6
@@ -82,7 +83,7 @@ jobs:
             await require('./scripts/activity_cache.cjs')({core, cache}, 'restore');
       - name: Generate independent activity cards
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.ACTIVITY_TOKEN || github.token }}
         run: python scripts/activity.py --directory dist
       - name: Save activity snapshot to Actions cache
         uses: actions/github-script@v8

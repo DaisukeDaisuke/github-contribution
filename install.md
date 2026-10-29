@@ -138,7 +138,7 @@ Actionsは`${{ secrets.DEPLOY_TOKEN }}`からトークンを受け取り、ト�
 
 ## 活動統計の画像
 
-追加のシークレットは不要です。草画像と同じ対象ユーザーを、Actions標準のトークンで集計します。`DEPLOY_TOKEN`は従来どおり外部デプロイ専用です。
+公開分だけなら追加のシークレットは不要です。草画像と同じ対象ユーザーを、Actions標準のトークンで集計します。`DEPLOY_TOKEN`は従来どおり外部デプロイ専用です。
 
 `activity-dark.webp` / `activity-light.webp`が全体画像、`activity-dark3.webp` / `activity-light3.webp`が高さ600pxのフェード付きプレビューです。SVGとPNGも生成します。草画像の生成処理は変更しません。
 
@@ -150,3 +150,14 @@ Actionsは`${{ secrets.DEPLOY_TOKEN }}`からトークンを受け取り、ト�
 ```
 
 活動統計の入力はActionsキャッシュだけに保存します。キャッシュキーはユーザー名とUTCのISO週（年＋週番号）です。同じ週は再取得せず、週が変わったら更新します。画像には取得日を表示します。API応答やキャッシュJSONを画像ブランチへコピーしません。既存の草マップ用CSV・JSONの出力設定はそのままです。
+
+
+### 非公開リポジトリも集計する場合
+
+**`ACTIVITY_TOKEN`を生成リポジトリのActions Secretsに登録**します。Variables・コード・URLには書きません。`DEPLOY_TOKEN`は流用しません。
+
+Fine-grained personal access tokenで、集計したい非公開リポジトリを選び、Repository permissionsの**Contents・Issues・Pull requestsをRead-only**にします。Metadataは標準のRead-onlyです。組織の承認が必要な場合は承認後に利用します。生成リポジトリの書き込み権限は不要です。
+
+設定すると、そのトークンで閲覧できる公開・非公開のPR・Issue・レビューと、対象ユーザーが所有する非forkリポジトリを集計します。トークンのアクセス対象外は含められません。未設定なら公開分だけです。
+
+**非公開分も合算した件数・言語割合は画像として公開されます。** リポジトリ名・本文・ソースコードは取得・公開しません。キャッシュには画像に使う集計値とアイコンだけを保存し、API応答は保存しません。公開のみ／非公開を含む設定で週単位のキャッシュを分けます。

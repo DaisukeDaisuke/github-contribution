@@ -42,7 +42,7 @@ class ActivityTests(unittest.TestCase):
             activity.collect('OtherUser','SECRET',tmp,'2031-01-06',request,avatar)
             self.assertEqual(len(calls),2)
             self.assertEqual(len(avatars),1)
-            stored = (Path(tmp)/'otheruser/snapshot.json').read_text()
+            stored = (Path(tmp)/'public/otheruser/snapshot.json').read_text()
             self.assertNotIn('SECRET',stored)
             self.assertNotIn('repositories": {',stored)  # No raw repository nodes.
             with self.assertRaises(ValueError):
@@ -114,12 +114,36 @@ class ActivityTests(unittest.TestCase):
             self.assertIn('[![activity-dark.webp](/../images/activity-dark3.webp#gh-dark-mode-only)](/../images/activity-dark.webp#gh-dark-mode-only)',embed)
             self.assertNotIn('Daisuke',embed)
             light=(dist/'activity-light.svg').read_text()
-            self.assertIn('PRs created <tspan font-weight="600">6</tspan>',light)
+            self.assertIn('PRs created <tspan font-weight="700" font-size="20">6</tspan>',light)
             self.assertIn('stroke="#1a7f37"',light)
             self.assertIn('stroke="#8250df"',light)
             self.assertNotIn('Authored · all time',light)
+            self.assertNotIn('Public data',light)
+            self.assertNotIn('fill=',light.split('PRs created <tspan',1)[1].split('</tspan>',1)[0])
             self.assertNotIn('Repositories &amp; community',light)
 
+
+    def test_private_scope_is_optional_and_has_separate_cache(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            calls=[]
+            def request(*args, **kwargs):
+                calls.append(kwargs['body']['query'])
+                return response(), {}
+            avatar=lambda _: 'data:image/png;base64,AA=='
+            activity.collect('OtherUser','token',tmp,'2031-01-01',request,avatar)
+            private=activity.collect('OtherUser','PRIVATE_TOKEN',tmp,'2031-01-01',request,avatar,include_private=True)
+            self.assertEqual(len(calls),2)
+            self.assertIn('is:public',calls[0])
+            self.assertIn('privacy: PUBLIC',calls[0])
+            self.assertNotIn('is:public',calls[1])
+            self.assertNotIn('privacy: PUBLIC',calls[1])
+            self.assertEqual(private['scope'],'accessible')
+            self.assertIn('token-accessible',activity.render(private))
+            activity.collect('OtherUser','token',tmp,'2031-01-01',request,avatar)
+            self.assertEqual(len(calls),2)
+            saved=(Path(tmp)/'accessible/otheruser/snapshot.json').read_text()
+            self.assertNotIn('PRIVATE_TOKEN',saved)
+            self.assertNotIn('nodes',saved)
 
     def test_zero_data_and_escaping(self):
         with tempfile.TemporaryDirectory() as tmp:
