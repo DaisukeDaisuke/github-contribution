@@ -15,11 +15,11 @@ import time
 import urllib.request
 from urllib.parse import urlparse
 
-from generate import request_json
+from generate import APIHTTPError, request_json
 
 SCHEMA = 4
-MAX_PAGES = 49  # At most 49 GraphQL calls + one avatar download.
-REPOSITORIES = '''repositories(first: 100, after: $cursor, ownerAffiliations: [OWNER],
+MAX_REQUESTS = 49  # Includes failed attempts; reserve one request for the avatar.
+REPOSITORIES = '''repositories(first: PAGE_SIZE, after: $cursor, ownerAffiliations: [OWNER],
   privacy: PUBLIC, isFork: false, orderBy: {field: NAME, direction: ASC}) {
   totalCount pageInfo {hasNextPage endCursor}
   nodes { id isArchived stargazerCount forkCount releases {totalCount}
@@ -38,9 +38,9 @@ FILTERS = {
 }
 
 
-def query(user, first, include_private=False):
+def query(user, first, include_private=False, page_size=25):
     visibility = '' if include_private else 'is:public '
-    repositories = REPOSITORIES
+    repositories = REPOSITORIES.replace('PAGE_SIZE', str(page_size))
     if include_private:
         repositories = repositories.replace('privacy: PUBLIC, ', '').replace(
             'ownerAffiliations: [OWNER]',
@@ -85,9 +85,36 @@ def collect(user, token, cache_dir, today=None, request=request_json, avatar=fet
     if not token:
         raise ValueError('Activity generation requires GH_TOKEN or GITHUB_TOKEN')
     cursor, seen, repos, model = None, set(), [], {}
-    for page in range(MAX_PAGES):
-        raw, _ = request('https://api.github.com/graphql', token=token, body={
-            'query': query(user, page == 0, include_private), 'variables': {'login': user, 'cursor': cursor}})
+    attempts, page_size = 0, 25
+    for page in range(MAX_REQUESTS):
+        for retry in range(3):
+            attempts += 1
+            try:
+                raw, _ = request('https://api.github.com/graphql', token=token, body={
+                    'query': query(user, page == 0, include_private, page_size),
+                    'variables': {'login': user, 'cursor': cursor}})
+                break
+            except APIHTTPError as exc:
+                from deploy import redact_diagnostics
+                diagnostic = (f'GitHub API HTTP {exc.status}; request-id={exc.request_id or "not supplied"}\n'
+                              'Response body (credentials redacted):\n' +
+                              (exc.response_body or '(empty response body)'))
+                print(redact_diagnostics(diagnostic, tokens=(token,)), file=sys.stderr, flush=True)
+                if exc.status not in (502, 503, 504) or exc.remaining == '0':
+                    raise
+                if retry == 2 or attempts >= MAX_REQUESTS:
+                    raise RuntimeError(f'Activity API HTTP {exc.status}; stopped after {retry + 1} attempts '
+                                       f'for this page ({attempts}/{MAX_REQUESTS} total requests).') from None
+                delay = 3 * (2 ** retry)
+                if exc.retry_after:
+                    # Do not retry early or introduce a long-running wait.
+                    if not exc.retry_after.isdigit() or int(exc.retry_after) > 60:
+                        raise
+                    delay = max(delay, int(exc.retry_after))
+                page_size = max(5, page_size // 2)
+                print(f'Activity API HTTP {exc.status}; retry {retry + 1}/2 in {delay}s '
+                      f'with {page_size} repositories per page.', flush=True)
+                time.sleep(delay)
         if raw.get('errors'):
             raise RuntimeError('Activity GraphQL failed: ' + '; '.join(e.get('message', 'error') for e in raw['errors']))
         data = raw['data']
@@ -105,7 +132,7 @@ def collect(user, token, cache_dir, today=None, request=request_json, avatar=fet
                 seen.add(repo['id'])
                 repos.append(repo)
         has_next = connection['pageInfo']['hasNextPage']
-        if not has_next:
+        if not has_next or attempts >= MAX_REQUESTS:
             break
         next_cursor = connection['pageInfo']['endCursor']
         if not next_cursor or next_cursor == cursor:
@@ -132,7 +159,7 @@ def collect(user, token, cache_dir, today=None, request=request_json, avatar=fet
     model['avatar'] = previous['avatar'] if cached_avatar else avatar(model['avatarUrl'])
     file.parent.mkdir(parents=True, exist_ok=True)
     file.write_text(json.dumps(model, ensure_ascii=False), encoding='utf-8')
-    print(f'Activity: {page + 1} GraphQL request(s), {0 if cached_avatar else 1} avatar download; '
+    print(f'Activity: {attempts} GraphQL request(s), including retries, {0 if cached_avatar else 1} avatar download; '
           f'{len(repos)}/{model["repositories"]} {scope} non-fork repositories.')
     return model
 

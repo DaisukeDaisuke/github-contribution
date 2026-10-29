@@ -66,7 +66,7 @@ class ActivityTests(unittest.TestCase):
             self.assertEqual(len(calls),2)
 
     def test_pagination_and_budget_show_partial_coverage(self):
-        with tempfile.TemporaryDirectory() as tmp, patch.object(activity, 'MAX_PAGES', 2):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(activity, 'MAX_REQUESTS', 2):
             calls=[]
             def request(*args,**kwargs):
                 calls.append(kwargs)
@@ -167,6 +167,78 @@ class ActivityTests(unittest.TestCase):
             self.assertNotIn('personal-id',saved)
             self.assertNotIn('organization-private-id',saved)
             self.assertNotIn('nodes',saved)
+
+    def test_transient_errors_reduce_page_size_and_preserve_cursor(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(activity.time, 'sleep') as sleep:
+            calls=[]
+            def request(*args, **kwargs):
+                calls.append(kwargs['body'])
+                if len(calls) == 1:
+                    return response(True,'first-page'), {}
+                if len(calls) in (2,3):
+                    raise activity.APIHTTPError(502)
+                return response(False,'second-page'), {}
+            model=activity.collect('OtherUser','secret',tmp,'2031-01-01',request,
+                                   lambda _:'data:image/png;base64,AA==')
+            self.assertEqual(len(calls),4)
+            self.assertEqual([c['variables']['cursor'] for c in calls],[None,'first-page','first-page','first-page'])
+            for call,size in zip(calls,[25,25,12,6]):
+                self.assertIn(f'repositories(first: {size},',call['query'])
+            self.assertEqual([c.args[0] for c in sleep.call_args_list],[3,6])
+            self.assertEqual(model['sampled'],2)
+
+    def test_retry_limits_and_non_retryable_statuses_do_not_cache_errors(self):
+        cases=[(502,None,None,49,3),(503,'12',None,49,3),(504,None,None,2,2),
+               (403,None,None,49,1),(429,'60',None,49,1),(401,None,None,49,1),
+               (502,None,'0',49,1),(503,'120',None,49,1)]
+        for status,after,remaining,budget,expected in cases:
+            with self.subTest(status=status,budget=budget,after=after,remaining=remaining):
+                with tempfile.TemporaryDirectory() as tmp, patch.object(activity.time,'sleep') as sleep, patch.object(activity,'MAX_REQUESTS',budget):
+                    calls=[]
+                    def request(*args,**kwargs):
+                        calls.append(1)
+                        raise activity.APIHTTPError(status,after,remaining)
+                    with self.assertRaises(RuntimeError):
+                        activity.collect('OtherUser','secret',tmp,'2031-01-01',request)
+                    self.assertEqual(len(calls),expected)
+                    self.assertFalse(list(Path(tmp).rglob('snapshot.json')))
+                    if status==503 and after=='12':
+                        self.assertEqual([c.args[0] for c in sleep.call_args_list],[12,12])
+
+    def test_retry_attempts_count_toward_successful_partial_budget(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(activity.time,'sleep'), patch.object(activity,'MAX_REQUESTS',2):
+            calls=[]
+            def request(*args,**kwargs):
+                calls.append(1)
+                if len(calls)==1:
+                    raise activity.APIHTTPError(504)
+                return response(True), {}
+            model=activity.collect('OtherUser','token',tmp,'2031-01-01',request,lambda _:'data:image/png;base64,AA==')
+            self.assertEqual(len(calls),2)
+            self.assertTrue(model['partial'])
+
+    def test_http_body_is_preserved_and_logged_with_credentials_redacted(self):
+        import io
+        import urllib.error
+        import generate
+        body='{"message":"upstream timed out", "detail":"not summarized", "echo":"test-secret"}'
+        error=urllib.error.HTTPError('https://api.github.com/graphql',502,'Bad Gateway',
+            {'X-GitHub-Request-Id':'request-123'},io.BytesIO(body.encode()))
+        with patch.object(generate.urllib.request,'urlopen',side_effect=error), patch.object(generate,'_last_request_finished',None):
+            with self.assertRaises(generate.APIHTTPError) as raised:
+                generate.request_json('https://api.github.com/graphql',token='test-secret',body={})
+        self.assertEqual(raised.exception.response_body,body)
+        self.assertEqual(raised.exception.request_id,'request-123')
+        with tempfile.TemporaryDirectory() as tmp, patch.object(activity,'MAX_REQUESTS',1), patch('sys.stderr',new_callable=io.StringIO) as stderr:
+            def request(*args,**kwargs):
+                raise raised.exception
+            with self.assertRaises(RuntimeError):
+                activity.collect('OtherUser','test-secret',tmp,'2031-01-01',request)
+            log=stderr.getvalue()
+            self.assertIn('request-123',log)
+            self.assertIn('"detail":"not summarized"',log)
+            self.assertIn('[REDACTED]',log)
+            self.assertNotIn('test-secret',log)
 
     def test_zero_data_and_escaping(self):
         with tempfile.TemporaryDirectory() as tmp:

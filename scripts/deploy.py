@@ -167,7 +167,7 @@ def main(argv=None):
     publish_external(options.directory, *settings)
 
 
-def redact_diagnostics(message):
+def redact_diagnostics(message, *, tokens=()):
     """Keep Git's explanation, removing credentials before anything is printed."""
     if isinstance(message, bytes):
         message = message.decode('utf-8', errors='replace')
@@ -175,8 +175,9 @@ def redact_diagnostics(message):
     # Strip terminal escapes before matching credentials.
     message = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', message)
     secrets = set()
-    for name in ('DEPLOY_TOKEN', 'GH_TOKEN', 'GITHUB_TOKEN'):
-        token = os.environ.get(name, '').strip()
+    for token in (*tokens, *(os.environ.get(name, '') for name in
+                            ('DEPLOY_TOKEN', 'ACTIVITY_TOKEN', 'GH_TOKEN', 'GITHUB_TOKEN'))):
+        token = token.strip()
         if not token:
             continue
         secrets.update((token, quote(token, safe=''),

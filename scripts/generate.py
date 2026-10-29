@@ -36,6 +36,17 @@ def save_year_cache(path, response):
         path.write_text(json.dumps(response, ensure_ascii=False), encoding='utf-8')
 
 
+class APIHTTPError(RuntimeError):
+    """Preserve error responses for callers to log after credential redaction."""
+    def __init__(self, status, retry_after=None, remaining=None, response_body='', request_id=None):
+        self.status = status
+        self.retry_after = retry_after
+        self.remaining = remaining
+        self.response_body = response_body
+        self.request_id = request_id
+        super().__init__(f'API HTTP {status}; stopped without retry. Retry-After={retry_after or "not supplied"}')
+
+
 def request_json(url, *, token=None, body=None):
     global _last_request_finished
     if _last_request_finished is not None:
@@ -55,7 +66,10 @@ def request_json(url, *, token=None, body=None):
             limit = {k: response.headers.get('X-RateLimit-' + k) for k in ['Limit', 'Remaining', 'Reset']}
     except urllib.error.HTTPError as exc:
         retry_after = exc.headers.get('Retry-After') if exc.headers else None
-        raise RuntimeError(f'API HTTP {exc.code}; stopped without retry. Retry-After={retry_after or "not supplied"}') from None
+        remaining = exc.headers.get('X-RateLimit-Remaining') if exc.headers else None
+        response_body = exc.read().decode('utf-8', errors='replace')
+        request_id = exc.headers.get('X-GitHub-Request-Id') if exc.headers else None
+        raise APIHTTPError(exc.code, retry_after, remaining, response_body, request_id) from None
     finally:
         _last_request_finished = time.monotonic()
     return result, {k.lower(): v for k, v in limit.items() if v is not None}
