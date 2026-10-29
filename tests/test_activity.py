@@ -108,7 +108,7 @@ class ActivityTests(unittest.TestCase):
                 for suffix in ('','3'):
                     self.assertEqual((dist/f'profile-{theme}{suffix}.svg').read_text(),'unchanged original')
                     svg=ET.fromstring((dist/f'activity-{theme}{suffix}.svg').read_text())
-                    self.assertEqual(svg.attrib['height'],'600' if suffix else '640')
+                    self.assertEqual(svg.attrib['height'],'512')
             self.assertFalse(list(dist.glob('*.json')))
             embed=(dist/'embed.md').read_text()
             self.assertIn('[![activity-dark.webp](/../images/activity-dark3.webp#gh-dark-mode-only)](/../images/activity-dark.webp#gh-dark-mode-only)',embed)

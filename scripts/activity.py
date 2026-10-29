@@ -180,13 +180,17 @@ ICONS = {
 def render(model, theme='light', preview=False):
     dark = theme == 'dark'
     bg, panel, fg, muted, border, accent = ('#0d1117', '#161b22', '#e6edf3', '#9da7b3', '#30363d', '#79c0ff') if dark else ('#ffffff', '#f6f8fa', '#1f2328', '#59636e', '#d1d9e0', '#0969da')
-    height = 600 if preview else 640
+    language_count = min(len(model['languages']), 8)
+    last_y = 480 + ((language_count - 1) // 2) * 25 if language_count else 457
+    full_height = last_y + 32 + (26 if model['partial'] else 0)
+    height = min(600, full_height) if preview else full_height
+    fade_start = height - 150
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="{height}" viewBox="0 0 800 {height}" role="img" aria-labelledby="title desc">',
              f'<title id="title">{escape(model["user"])} · GitHub activity</title>',
              '<desc id="desc">Public pull requests, issues, reviewed pull requests, repositories and language distribution.</desc>',
-             '<defs><clipPath id="avatar"><circle cx="58" cy="58" r="26"/></clipPath><linearGradient id="fade" x2="0" y2="1"><stop offset="0" stop-color="white"/><stop offset="1" stop-color="black"/></linearGradient><mask id="preview"><rect width="800" height="450" fill="white"/><rect y="450" width="800" height="150" fill="url(#fade)"/></mask></defs>',
+             f'<defs><clipPath id="avatar"><circle cx="58" cy="58" r="26"/></clipPath><linearGradient id="fade" x2="0" y2="1"><stop offset="0" stop-color="white"/><stop offset="1" stop-color="black"/></linearGradient><mask id="preview"><rect width="800" height="{fade_start}" fill="white"/><rect y="{fade_start}" width="800" height="150" fill="url(#fade)"/></mask></defs>',
              f'<g font-family="Liberation Sans, Arial, sans-serif" fill="{fg}"' + (' mask="url(#preview)"' if preview else '') + '>',
-             f'<rect x=".5" y=".5" width="799" height="639" rx="18" fill="{bg}" stroke="{border}"/>']
+             f'<rect x=".5" y=".5" width="799" height="{full_height - 1}" rx="18" fill="{bg}" stroke="{border}"/>']
     def text(x, y, value, size=14, color=None, extra=''):
         parts.append(f'<text x="{x}" y="{y}" font-size="{size}" fill="{color or fg}" {extra}>{escape(str(value))}</text>')
     colors = {'green': '#3fb950' if dark else '#1a7f37',
@@ -239,7 +243,7 @@ def render(model, theme='light', preview=False):
         parts.append(f'<circle cx="{x+5}" cy="{y-5}" r="4" fill="{color}"/>')
         parts.append(f'<text x="{x+18}" y="{y}" font-size="13">{escape(item["name"])} <tspan fill="{muted}">{100*item["size"]/total:.1f}%</tspan></text>')
     if model['partial']:
-        text(32, 602, f'PARTIAL SAMPLE · {model["sampled"]:,} / {model["repositories"]:,}', 11, muted)
+        text(32, last_y + 26, f'PARTIAL SAMPLE · {model["sampled"]:,} / {model["repositories"]:,}', 11, muted)
     parts.append('</g></svg>')
     return '\n'.join(parts)
 
