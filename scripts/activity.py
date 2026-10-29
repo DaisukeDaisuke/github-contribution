@@ -216,6 +216,14 @@ def format_bytes(size):
         value /= 1000
 
 
+def with_contribution_totals(model, report_path):
+    """Reuse the grass map's validated totals from historical and fresh year data."""
+    report = json.loads(Path(report_path).read_text(encoding='utf-8'))
+    if report['metadata']['user'].lower() != model['user'].lower():
+        raise ValueError('Contribution archive owner differs from activity account')
+    return dict(model, activeDays=report['summary']['activeDays'], contributions=report['summary']['total'])
+
+
 def render(model, theme='light', preview=False):
     dark = theme == 'dark'
     bg, panel, fg, muted, border, accent = ('#0d1117', '#161b22', '#e6edf3', '#9da7b3', '#30363d', '#79c0ff') if dark else ('#ffffff', '#f6f8fa', '#1f2328', '#59636e', '#d1d9e0', '#0969da')
@@ -244,6 +252,9 @@ def render(model, theme='light', preview=False):
     text(100, 52, model['user'], 22, extra='font-weight="700"')
     text(100, 77, 'GitHub activity', 14, muted)
     text(768, 49, model['date'], 12, muted, 'text-anchor="end"')
+    if 'activeDays' in model and 'contributions' in model:
+        parts.append(f'<text x="32" y="108" font-size="15">Active <tspan font-weight="700" font-size="20">{model["activeDays"]:,}</tspan> days'
+                     f'<tspan dx="24">Contributions </tspan><tspan dx="4" font-weight="700" font-size="20">{model["contributions"]:,}</tspan></text>')
     c = model['counts']
     items = [
         ('pr', 'PRs created', c['prOpen']+c['prMerged']+c['prClosed'], 'green'),
@@ -336,6 +347,7 @@ def main():
     # Also space this process's first call from the preceding workflow step.
     time.sleep(1.2)
     model = collect(args.user, os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN'), args.cache_dir, include_private=os.environ.get('ACTIVITY_SCOPE') == 'accessible')
+    model = with_contribution_totals(model, args.directory / 'data.json')
     write_outputs(model,args.directory,os.environ.get('GITHUB_REPOSITORY',''),os.environ.get('OUTPUT_BRANCH','contribution-graphs'))
 
 

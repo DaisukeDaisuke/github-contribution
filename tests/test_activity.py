@@ -28,6 +28,37 @@ def response(next_page=False, repo_id='one'):
 
 
 class ActivityTests(unittest.TestCase):
+    def test_contribution_totals_refresh_independently_of_weekly_activity_cache(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            request = lambda *a, **k: (response(), {})
+            model = activity.collect('OtherUser', 'token', root / 'cache', '2031-01-01', request,
+                                     lambda _: 'data:image/png;base64,AA==')
+            report = root / 'data.json'
+            report.write_text(json.dumps({'metadata': {'user': 'OtherUser'},
+                                         'summary': {'activeDays': 1405, 'total': 8443}}))
+            enriched = activity.with_contribution_totals(model, report)
+            for theme in ('light', 'dark'):
+                for preview in (False, True):
+                    svg = ET.fromstring(activity.render(enriched, theme, preview))
+                    labels = [''.join(node.itertext()) for node in svg.findall('.//{http://www.w3.org/2000/svg}text')]
+                    self.assertIn('Active 1,405 daysContributions 8,443', labels)
+            snapshot = root / 'cache/public/otheruser/snapshot.json'
+            before = snapshot.read_bytes()
+            with patch.object(activity, 'request_json', side_effect=AssertionError('No extra API request')) as api:
+                cached = activity.collect('OtherUser', 'token', root / 'cache', '2031-01-02', request=api)
+                report.write_text(json.dumps({'metadata': {'user': 'OtherUser'},
+                                             'summary': {'activeDays': 1406, 'total': 8450}}))
+                refreshed = activity.with_contribution_totals(cached, report)
+                api.assert_not_called()
+            self.assertEqual(refreshed['activeDays'], 1406)
+            self.assertEqual(refreshed['contributions'], 8450)
+            self.assertEqual(before, snapshot.read_bytes())
+            self.assertNotIn('activeDays', cached)
+            report.write_text(json.dumps({'metadata': {'user': 'SomeoneElse'}, 'summary': {}}))
+            with self.assertRaisesRegex(ValueError, 'owner differs'):
+                activity.with_contribution_totals(model, report)
+
     def test_joined_and_not_planned_share_first_request_and_refresh_old_cache(self):
         with tempfile.TemporaryDirectory() as tmp:
             file = Path(tmp) / 'public/otheruser/snapshot.json'

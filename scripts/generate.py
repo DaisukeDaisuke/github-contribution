@@ -25,9 +25,14 @@ _last_request_finished = None
 
 
 def year_cache_path(directory, user, source, year, until):
-    if directory is None or year > until.year - 2:
+    if directory is None:
         return None
-    return Path(directory) / source / user.lower() / f'{year}.json'
+    root = Path(directory) / source / user.lower()
+    # Recent years are available within this run, but never restored/saved by
+    # history_cache.cjs. Keep them separate from immutable historical files.
+    if year > until.year - 2:
+        root /= 'recent'
+    return root / f'{year}.json'
 
 
 def save_year_cache(path, response):
@@ -99,7 +104,7 @@ def fetch_graphql(user, start_year, until, token, *, cache_dir=None):
     while pending_years:
         year = pending_years.popleft()
         cache_path = year_cache_path(cache_dir, user, 'github-graphql', year, until)
-        cached = cache_path is not None and cache_path.is_file()
+        cached = year <= until.year - 2 and cache_path is not None and cache_path.is_file()
         if cached:
             raw, headers = json.loads(cache_path.read_text(encoding='utf-8')), {}
             cached_years.append(year)
@@ -161,7 +166,7 @@ def fetch_public(user, start_year, until, *, cache_dir=None):
         if year < int(profile['created_at'][:4]):
             continue
         cache_path = year_cache_path(cache_dir, user, 'public-calendar-api', year, until)
-        cached = cache_path is not None and cache_path.is_file()
+        cached = year <= until.year - 2 and cache_path is not None and cache_path.is_file()
         if cached:
             raw = json.loads(cache_path.read_text(encoding='utf-8'))
             cached_years.append(year)
