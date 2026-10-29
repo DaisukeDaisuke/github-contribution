@@ -238,7 +238,7 @@ class ActivityTests(unittest.TestCase):
             self.assertIn('[![activity-dark.webp](/../images/activity-dark3.webp#gh-dark-mode-only)](/../images/activity-dark.webp#gh-dark-mode-only)',embed)
             self.assertNotIn('Daisuke',embed)
             light=(dist/'activity-light.svg').read_text()
-            self.assertIn('PRs created <tspan font-weight="700" font-size="20">6</tspan>',light)
+            self.assertIn('PRs created <tspan font-weight="700" font-size="26">6</tspan>',light)
             self.assertIn('stroke="#1a7f37"',light)
             self.assertIn('stroke="#8250df"',light)
             self.assertNotIn('Authored · all time',light)
