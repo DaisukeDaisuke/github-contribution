@@ -91,6 +91,7 @@ def collect(user, token, cache_dir, today=None, request=request_json, avatar=fet
         for retry in range(3):
             attempts += 1
             remaining, cost = None, None
+            total_requests, batch_size, repository_progress = 'unknown', 'unknown', 'unknown'
             try:
                 raw, headers = request('https://api.github.com/graphql', token=token, body={
                     'query': query(user, page == 0, include_private, page_size),
@@ -98,6 +99,17 @@ def collect(user, token, cache_dir, today=None, request=request_json, avatar=fet
                 rate = (raw.get('data') or {}).get('rateLimit') or {}
                 remaining = rate.get('remaining', headers.get('remaining'))
                 cost = rate.get('cost')
+                connection = ((raw.get('data') or {}).get('user') or {}).get('repositories')
+                if connection:
+                    batch_size = len(connection['nodes'])
+                    collected = len(seen | {repo['id'] for repo in connection['nodes']})
+                    total = connection['totalCount']
+                    repository_progress = f'{collected}/{total}'
+                    if connection['pageInfo']['hasNextPage']:
+                        pages_left = max(1, (max(0, total - collected) + page_size - 1) // page_size)
+                        total_requests = f'{attempts + pages_left} (estimated total)'
+                    else:
+                        total_requests = str(attempts)
                 break
             except APIHTTPError as exc:
                 remaining = exc.remaining
@@ -124,9 +136,10 @@ def collect(user, token, cache_dir, today=None, request=request_json, avatar=fet
                 # Rate limits are points, not a guaranteed number of further calls.
                 def number(value):
                     return str(value) if re.fullmatch(r'[0-9]+', str(value)) else 'unknown'
-                print(f'Activity API request {attempts}/{MAX_REQUESTS}: '
-                      f'{MAX_REQUESTS - attempts} script requests remaining; '
-                      f'GitHub points remaining={number(remaining)}; cost={number(cost)}.', flush=True)
+                print(f'Activity API request {attempts}/{total_requests}, '
+                      f'batch={batch_size} repositories, repositories={repository_progress}; '
+                      f'request budget remaining={MAX_REQUESTS - attempts}/{MAX_REQUESTS}; '
+                      f'rate limit remaining={number(remaining)} points; cost={number(cost)}.', flush=True)
             time.sleep(delay)
         if raw.get('errors'):
             raise RuntimeError('Activity GraphQL failed: ' + '; '.join(e.get('message', 'error') for e in raw['errors']))
@@ -248,7 +261,8 @@ def render(model, theme='light', preview=False):
         ('release', 'Releases', model['releases'], 'blue'),
         ('people', 'Followers', model['followers'], 'purple'),
         ('notPlanned', 'Issues not planned', c['issueNotPlanned'], 'muted'),
-        ('clock', 'GitHub Joined', str(dt.datetime.fromisoformat(model['createdAt'].replace('Z', '+00:00')).year), 'muted'),
+        ('clock', 'GitHub Joined', dt.datetime.fromisoformat(model['createdAt'].replace('Z', '+00:00'))
+         .astimezone(dt.timezone.utc).strftime('%Y/%m/%d'), 'muted'),
     ]
     for i, (kind, label, value, color) in enumerate(items):
         row(32 + i%2*380, 140+i//2*36, kind, label, value, color)

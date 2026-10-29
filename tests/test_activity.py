@@ -47,7 +47,7 @@ class ActivityTests(unittest.TestCase):
                 svg = ET.fromstring(activity.render(model, theme))
                 ns = {'s': 'http://www.w3.org/2000/svg'}
                 labels = [''.join(node.itertext()) for node in svg.findall('.//s:text', ns)]
-                self.assertIn('GitHub Joined 2013', labels)
+                self.assertIn('GitHub Joined 2013/04/05', labels)
                 self.assertIn(f'Issues not planned {model["counts"]["issueNotPlanned"]}', labels)
                 icon = svg.find('.//s:g[@transform="translate(32,377) scale(.75)"]', ns)
                 self.assertEqual(icon.attrib['stroke'], grey)
@@ -67,9 +67,39 @@ class ActivityTests(unittest.TestCase):
             lines = [line for line in stdout.getvalue().splitlines() if line.startswith('Activity API request ')]
             self.assertEqual(len(lines), 3)
             for line, budget, points in zip(lines, (48, 47, 46), (4999, 4000, 0)):
-                self.assertIn(f'{budget} script requests remaining', line)
-                self.assertIn(f'GitHub points remaining={points}', line)
+                self.assertIn(f'request budget remaining={budget}/49', line)
+                self.assertIn(f'rate limit remaining={points} points', line)
             self.assertIn('cost=1', lines[1])
+            self.assertIn('request 1/unknown, batch=unknown', lines[0])
+            self.assertIn('request 2/3 (estimated total), batch=1', lines[1])
+            self.assertIn('request 3/unknown, batch=unknown', lines[2])
+
+    def test_progress_separates_http_calls_repository_batches_and_budget(self):
+        with tempfile.TemporaryDirectory() as tmp, patch('sys.stdout', new_callable=io.StringIO) as stdout:
+            calls = []
+            def request(*args, **kwargs):
+                page = len(calls)
+                calls.append(kwargs)
+                raw = response(page < 3)
+                connection = raw['data']['user']['repositories']
+                template = connection['nodes'][0]
+                connection['totalCount'] = 96
+                connection['nodes'] = [dict(template, id=str(i)) for i in range(page * 25, min(96, (page + 1) * 25))]
+                connection['pageInfo']['endCursor'] = str(page)
+                raw['data']['rateLimit']['remaining'] = (4994, 4997, 4993, 4992)[page]
+                return raw, {}
+            activity.collect('OtherUser', 'token', tmp, '2031-01-01', request,
+                             lambda _: 'data:image/png;base64,AA==')
+            lines = [line for line in stdout.getvalue().splitlines() if line.startswith('Activity API request ')]
+            self.assertEqual(len(calls), 4)
+            for index, line in enumerate(lines, 1):
+                self.assertIn(f'request {index}/4', line)
+                self.assertIn(f'repositories={min(index * 25, 96)}/96', line)
+                self.assertIn(f'request budget remaining={49-index}/49', line)
+            self.assertIn('batch=25 repositories', lines[0])
+            self.assertIn('batch=21 repositories', lines[3])
+            self.assertNotIn('estimated', lines[3])
+            self.assertIn('rate limit remaining=4997 points', lines[1])
 
     def test_weekly_cache_isolates_user_and_reuses_avatar_next_week(self):
         with tempfile.TemporaryDirectory() as tmp:
