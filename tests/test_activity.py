@@ -23,6 +23,7 @@ def response(next_page=False, repo_id='one'):
                 'languages': {'totalSize': 100,
                     'edges': [{'size': 80, 'node': {'name': 'Python', 'color': '#3572A5'}}]}}]}},
         **{key: {'issueCount': i+1} for i,key in enumerate(activity.FILTERS)},
+        'issueNotPlanned': {'issueCount': 2},
         'rateLimit': {'remaining': 4000, 'cost': 1}}}
 
 
@@ -49,8 +50,15 @@ class ActivityTests(unittest.TestCase):
                 labels = [''.join(node.itertext()) for node in svg.findall('.//s:text', ns)]
                 self.assertIn('GitHub Joined 2013/04/05', labels)
                 self.assertIn(f'Issues not planned {model["counts"]["issueNotPlanned"]}', labels)
-                icon = svg.find('.//s:g[@transform="translate(32,377) scale(.75)"]', ns)
+                icon = svg.find('.//s:g[@transform="translate(412,233) scale(.75)"]', ns)
                 self.assertEqual(icon.attrib['stroke'], grey)
+                self.assertIn('Issues closed 3', labels)
+                self.assertIn('Issues created 9', labels)
+                positions = {''.join(node.itertext()): node.attrib for node in svg.findall('.//s:text', ns)}
+                closed = positions['Issues closed 3']
+                not_planned = positions['Issues not planned 2']
+                self.assertEqual(closed['x'], not_planned['x'])
+                self.assertEqual(int(not_planned['y']) - int(closed['y']), 36)
 
     def test_every_attempt_logs_budget_and_server_points_even_on_errors(self):
         with tempfile.TemporaryDirectory() as tmp, patch.object(activity.time, 'sleep'), patch('sys.stdout', new_callable=io.StringIO) as stdout:
