@@ -47,10 +47,12 @@ class ActivityTests(unittest.TestCase):
                     nodes = {''.join(node.itertext()): node for node in svg.findall('.//{http://www.w3.org/2000/svg}text')}
                     self.assertEqual(nodes['Active 1,405 days'].attrib['x'], '61')
                     self.assertEqual(nodes['Contributions 8,443'].attrib['x'], '441')
-                    self.assertEqual(nodes['Active 1,405 days'].attrib['y'], '428')
-                    self.assertEqual(nodes['Contributions 8,443'].attrib['y'], '428')
+                    self.assertEqual(nodes['Active 1,405 days'].attrib['y'], '140')
+                    self.assertEqual(nodes['Contributions 8,443'].attrib['y'], '140')
+                    self.assertEqual(nodes['PRs created 6'].attrib['y'], '176')
+                    self.assertEqual(nodes['Issues created 9'].attrib['y'], '176')
                     for x in (32, 412):
-                        self.assertIsNotNone(svg.find(f'.//{{http://www.w3.org/2000/svg}}g[@transform="translate({x},413) scale(.75)"]'))
+                        self.assertIsNotNone(svg.find(f'.//{{http://www.w3.org/2000/svg}}g[@transform="translate({x},125) scale(.75)"]'))
             snapshot = root / 'cache/public/otheruser/snapshot.json'
             before = snapshot.read_bytes()
             with patch.object(activity, 'request_json', side_effect=AssertionError('No extra API request')) as api:

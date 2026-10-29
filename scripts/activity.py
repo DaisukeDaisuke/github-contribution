@@ -277,10 +277,10 @@ def render(model, theme='light', preview=False):
          .astimezone(dt.timezone.utc).strftime('%Y/%m/%d'), 'muted'),
     ]
     if has_contribution_totals:
-        items.extend([
+        items = [
             ('calendar', 'Active', model['activeDays'], 'green'),
             ('activity', 'Contributions', model['contributions'], 'green'),
-        ])
+        ] + items
     for i, (kind, label, value, color) in enumerate(items):
         row(32 + i%2*380, 140+i//2*36, kind, label, value, color, ' days' if kind == 'calendar' else '')
     parts.append(f'<path d="M32 {419 + totals_height}H768" stroke="{border}"/>')
