@@ -19,11 +19,11 @@
 <g transform="translate(32,197) scale(.75)" fill="none" stroke="#8250df" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M14 4h2a3 3 0 0 1 3 3v11M14 4l3-3M14 4l3 3"/><circle cx="19" cy="20" r="2"/></g>
 <text x="61" y="212" font-size="15">PRs merged <tspan font-weight="700" font-size="20">102</tspan></text>
 <g transform="translate(412,197) scale(.75)" fill="none" stroke="#8250df" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16v1"/></g>
-<text x="441" y="212" font-size="15">Issues closed <tspan font-weight="700" font-size="20">84</tspan></text>
+<text x="441" y="212" font-size="15">Issues closed <tspan font-weight="700" font-size="20">79</tspan></text>
 <g transform="translate(32,233) scale(.75)" fill="none" stroke="#cf222e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M14 4h2a3 3 0 0 1 3 3v11M14 4l3-3M14 4l3 3"/><circle cx="19" cy="20" r="2"/></g>
 <text x="61" y="248" font-size="15">PRs closed, unmerged <tspan font-weight="700" font-size="20">28</tspan></text>
-<g transform="translate(412,233) scale(.75)" fill="none" stroke="#0969da" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v13H9l-4 4zM9 9l2 2 4-4"/></g>
-<text x="441" y="248" font-size="15">PRs reviewed <tspan font-weight="700" font-size="20">17</tspan></text>
+<g transform="translate(412,233) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m6 18 12-12"/></g>
+<text x="441" y="248" font-size="15">Issues not planned <tspan font-weight="700" font-size="20">5</tspan></text>
 <g transform="translate(32,269) scale(.75)" fill="none" stroke="#0969da" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M5 17h14M9 7h6"/></g>
 <text x="61" y="284" font-size="15">Repositories <tspan font-weight="700" font-size="20">96</tspan></text>
 <g transform="translate(412,269) scale(.75)" fill="none" stroke="#9a6700" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></g>
@@ -36,20 +36,20 @@
 <text x="61" y="356" font-size="15">Releases <tspan font-weight="700" font-size="20">124</tspan></text>
 <g transform="translate(412,341) scale(.75)" fill="none" stroke="#8250df" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M16 4a3 3 0 0 1 0 6M18 14a6 6 0 0 1 4 7"/></g>
 <text x="441" y="356" font-size="15">Followers <tspan font-weight="700" font-size="20">70</tspan></text>
-<g transform="translate(32,377) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m6 18 12-12"/></g>
-<text x="61" y="392" font-size="15">Issues not planned <tspan font-weight="700" font-size="20">5</tspan></text>
+<g transform="translate(32,377) scale(.75)" fill="none" stroke="#0969da" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v13H9l-4 4zM9 9l2 2 4-4"/></g>
+<text x="61" y="392" font-size="15">PRs reviewed <tspan font-weight="700" font-size="20">17</tspan></text>
 <g transform="translate(412,377) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></g>
 <text x="441" y="392" font-size="15">GitHub Joined <tspan font-weight="700" font-size="20">2016/03/12</tspan></text>
 <path d="M32 419H768" stroke="#d1d9e0"/>
 <text x="32" y="453" font-size="18" fill="#0969da" font-weight="600">Language distribution</text>
-<rect x="32.000" y="475" width="475.172" height="12" fill="#f1e05a"/>
-<rect x="507.172" y="475" width="128.967" height="12" fill="#4F5D95"/>
-<rect x="636.139" y="475" width="51.856" height="12" fill="#e34c26"/>
-<rect x="687.994" y="475" width="32.372" height="12" fill="#3572A5"/>
-<rect x="720.366" y="475" width="19.208" height="12" fill="#f34b7d"/>
-<rect x="739.574" y="475" width="14.062" height="12" fill="#000080"/>
-<rect x="753.636" y="475" width="4.700" height="12" fill="#7355dd"/>
-<rect x="758.335" y="475" width="9.665" height="12" fill="#8b949e"/>
+<rect x="32.000" y="475" width="475.114" height="12" fill="#f1e05a"/>
+<rect x="507.114" y="475" width="128.952" height="12" fill="#4F5D95"/>
+<rect x="636.066" y="475" width="51.849" height="12" fill="#e34c26"/>
+<rect x="687.915" y="475" width="32.457" height="12" fill="#3572A5"/>
+<rect x="720.372" y="475" width="19.206" height="12" fill="#f34b7d"/>
+<rect x="739.578" y="475" width="14.060" height="12" fill="#000080"/>
+<rect x="753.638" y="475" width="4.699" height="12" fill="#7355dd"/>
+<rect x="758.337" y="475" width="9.663" height="12" fill="#8b949e"/>
 <circle cx="37" cy="511" r="4" fill="#f1e05a"/>
 <text x="50" y="516" font-size="13">JavaScript <tspan fill="#59636e">64.6%</tspan><tspan dx="12" fill="#59636e">18.3 MB</tspan></text>
 <circle cx="417" cy="511" r="4" fill="#4F5D95"/>
