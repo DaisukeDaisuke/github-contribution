@@ -11,23 +11,23 @@
       "year": 2025,
       "cost": 1,
       "limit": 5000,
-      "remaining": 4999,
-      "resetAt": "2026-10-29T04:53:57Z"
+      "remaining": 4994,
+      "resetAt": "2026-10-29T04:04:19Z"
     },
     "rateLimitHistory": [
       {
         "year": 2026,
         "cost": 1,
         "limit": 5000,
-        "remaining": 4995,
-        "resetAt": "2026-10-29T04:04:19Z"
+        "remaining": 4998,
+        "resetAt": "2026-10-29T04:53:57Z"
       },
       {
         "year": 2025,
         "cost": 1,
         "limit": 5000,
-        "remaining": 4999,
-        "resetAt": "2026-10-29T04:53:57Z"
+        "remaining": 4994,
+        "resetAt": "2026-10-29T04:04:19Z"
       }
     ],
     "historicalCachedYears": [
@@ -43,7 +43,7 @@
     ],
     "historicalCacheThrough": 2024,
     "minimumRequestIntervalSeconds": 1.2,
-    "dataFetchedAt": "2026-10-29T03:53:58.272556+00:00",
+    "dataFetchedAt": "2026-10-29T04:00:57.928571+00:00",
     "periodStart": "2016-01-01",
     "periodEnd": "2026-10-29",
     "cutoffTimezone": "Asia/Tokyo",
@@ -59,13 +59,13 @@
     "dayBoundary": "GitHub dates are preserved; no timezone redistribution"
   },
   "summary": {
-    "total": 8434,
+    "total": 8437,
     "observedDays": 3955,
     "eligibleDays": 3884,
     "activeDays": 1405,
     "activeRate": 36.17,
-    "averagePerDay": 2.171,
-    "averagePerActiveDay": 6.003,
+    "averagePerDay": 2.172,
+    "averagePerActiveDay": 6.005,
     "maxDailyCount": 145,
     "peakDates": [
       "2026-10-05"
@@ -19856,7 +19856,7 @@
     },
     {
       "date": "2026-10-29",
-      "count": 6,
+      "count": 9,
       "level": 1
     }
   ],
@@ -20093,13 +20093,13 @@
       "comparisonChangePercent": 212.77
     },
     {
-      "total": 3606,
+      "total": 3609,
       "observedDays": 302,
       "eligibleDays": 302,
       "activeDays": 256,
       "activeRate": 84.77,
-      "averagePerDay": 11.94,
-      "averagePerActiveDay": 14.086,
+      "averagePerDay": 11.95,
+      "averagePerActiveDay": 14.098,
       "maxDailyCount": 145,
       "peakDates": [
         "2026-10-05"
@@ -20113,7 +20113,7 @@
       "partial": true,
       "through": "2026-10-29",
       "comparisonPreviousTotal": 1061,
-      "comparisonChangePercent": 239.87
+      "comparisonChangePercent": 240.15
     }
   ],
   "months": [
@@ -22985,13 +22985,13 @@
       "partial": false
     },
     {
-      "total": 907,
+      "total": 910,
       "observedDays": 29,
       "eligibleDays": 29,
       "activeDays": 28,
       "activeRate": 96.55,
-      "averagePerDay": 31.276,
-      "averagePerActiveDay": 32.393,
+      "averagePerDay": 31.379,
+      "averagePerActiveDay": 32.5,
       "maxDailyCount": 145,
       "peakDates": [
         "2026-10-05"
@@ -23067,13 +23067,13 @@
       "label": "水"
     },
     {
-      "total": 1208,
+      "total": 1211,
       "observedDays": 555,
       "eligibleDays": 555,
       "activeDays": 187,
       "activeRate": 33.69,
-      "averagePerDay": 2.177,
-      "averagePerActiveDay": 6.46,
+      "averagePerDay": 2.182,
+      "averagePerActiveDay": 6.476,
       "maxDailyCount": 63,
       "peakDates": [
         "2026-08-20"
