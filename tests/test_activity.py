@@ -137,12 +137,35 @@ class ActivityTests(unittest.TestCase):
             self.assertIn('privacy: PUBLIC',calls[0])
             self.assertNotIn('is:public',calls[1])
             self.assertNotIn('privacy: PUBLIC',calls[1])
+            self.assertIn('ownerAffiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER]',calls[1])
+            for field in ('object(', 'text', 'blob', 'tree', 'contents', 'nameWithOwner'):
+                self.assertNotIn(field,calls[1])
             self.assertEqual(private['scope'],'accessible')
             self.assertIn('token-accessible',activity.render(private))
             activity.collect('OtherUser','token',tmp,'2031-01-01',request,avatar)
             self.assertEqual(len(calls),2)
             saved=(Path(tmp)/'accessible/otheruser/snapshot.json').read_text()
             self.assertNotIn('PRIVATE_TOKEN',saved)
+            self.assertNotIn('nodes',saved)
+
+    def test_organization_pages_aggregate_without_persisting_repository_details(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            first=response(True, 'personal-id')
+            second=response(False, 'organization-private-id')
+            second['data']['user']['repositories']['totalCount']=2
+            second['data']['user']['repositories']['nodes'].append(
+                copy.deepcopy(first['data']['user']['repositories']['nodes'][0]))
+            # Duplicate during pagination must not inflate aggregates.
+            pages=iter([first,second])
+            model=activity.collect('OtherUser','token',tmp,'2031-01-01',
+                lambda *a,**k:(next(pages),{}),lambda _:'data:image/png;base64,AA==',include_private=True)
+            self.assertEqual(model['sampled'],2)
+            self.assertEqual(model['stars'],6)
+            self.assertEqual(model['releases'],8)
+            self.assertEqual(model['languages'][0]['size'],160)
+            saved=(Path(tmp)/'accessible/otheruser/snapshot.json').read_text()
+            self.assertNotIn('personal-id',saved)
+            self.assertNotIn('organization-private-id',saved)
             self.assertNotIn('nodes',saved)
 
     def test_zero_data_and_escaping(self):

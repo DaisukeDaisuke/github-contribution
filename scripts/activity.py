@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 
 from generate import request_json
 
-SCHEMA = 3
+SCHEMA = 4
 MAX_PAGES = 49  # At most 49 GraphQL calls + one avatar download.
 REPOSITORIES = '''repositories(first: 100, after: $cursor, ownerAffiliations: [OWNER],
   privacy: PUBLIC, isFork: false, orderBy: {field: NAME, direction: ASC}) {
@@ -40,7 +40,11 @@ FILTERS = {
 
 def query(user, first, include_private=False):
     visibility = '' if include_private else 'is:public '
-    repositories = REPOSITORIES.replace('privacy: PUBLIC, ', '') if include_private else REPOSITORIES
+    repositories = REPOSITORIES
+    if include_private:
+        repositories = repositories.replace('privacy: PUBLIC, ', '').replace(
+            'ownerAffiliations: [OWNER]',
+            'ownerAffiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER]')
     searches = '\n'.join(f'{key}: search(type: ISSUE, first: 1, query: "{visibility}{value}{user}") {{issueCount}}'
                          for key, value in FILTERS.items()) if first else ''
     identity = 'login avatarUrl(size: 128) followers {totalCount}' if first else 'login'
@@ -209,7 +213,8 @@ def render(model, theme='light', preview=False):
         parts.append(f'<text x="{x+18}" y="{y}" font-size="13">{escape(item["name"])} <tspan fill="{muted}">{100*item["size"]/total:.1f}%</tspan></text>')
     scope_label = 'token-accessible' if model.get('scope') == 'accessible' else 'public'
     text(32, 602, f'{"PARTIAL SAMPLE · " if model["partial"] else ""}Language bytes across {model["sampled"]:,} / {model["repositories"]:,} {scope_label}, non-fork repositories.', 11, muted)
-    text(32, 621, 'PRs / issues: authored, all time. Reviews: distinct PRs. Repositories: owned, non-fork.', 11, muted)
+    repository_scope = 'owned / collaborator / organization, non-fork' if model.get('scope') == 'accessible' else 'owned, non-fork'
+    text(32, 621, 'PRs / issues: authored. Reviews: distinct PRs. Repositories: ' + repository_scope + '.', 11, muted)
     parts.append('</g></svg>')
     return '\n'.join(parts)
 
