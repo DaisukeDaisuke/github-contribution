@@ -195,6 +195,7 @@ def render(model, theme='light', preview=False):
         parts.append(f'<text x="{x}" y="{y}" font-size="{size}" fill="{color or fg}" {extra}>{escape(str(value))}</text>')
     colors = {'green': '#3fb950' if dark else '#1a7f37',
               'purple': '#bc8cff' if dark else '#8250df',
+              'red': '#f85149' if dark else '#cf222e',
               'blue': accent, 'gold': '#e3b341' if dark else '#9a6700', 'muted': muted}
     def row(x, y, name, label, value, color):
         parts.append(f'<g transform="translate({x},{y-15}) scale(.75)" fill="none" stroke="{colors[color]}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</g>')
@@ -211,7 +212,7 @@ def render(model, theme='light', preview=False):
         ('issue', 'Issues open', c['issueOpen'], 'green'),
         ('pr', 'PRs merged', c['prMerged'], 'purple'),
         ('issue', 'Issues closed', c['issueClosed'], 'purple'),
-        ('pr', 'PRs closed, unmerged', c['prClosed'], 'purple'),
+        ('pr', 'PRs closed, unmerged', c['prClosed'], 'red'),
         ('review', 'PRs reviewed', c['reviewed'], 'blue'),
         ('repo', 'Repositories', model['repositories'], 'blue'),
         ('star', 'Stars received', model['stars'], 'gold'),
