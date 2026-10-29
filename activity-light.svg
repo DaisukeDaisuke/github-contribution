@@ -39,7 +39,7 @@
 <g transform="translate(32,377) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m6 18 12-12"/></g>
 <text x="61" y="392" font-size="15">Issues not planned <tspan font-weight="700" font-size="20">5</tspan></text>
 <g transform="translate(412,377) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></g>
-<text x="441" y="392" font-size="15">GitHub Joined <tspan font-weight="700" font-size="20">2016</tspan></text>
+<text x="441" y="392" font-size="15">GitHub Joined <tspan font-weight="700" font-size="20">2016/03/12</tspan></text>
 <path d="M32 419H768" stroke="#d1d9e0"/>
 <text x="32" y="453" font-size="18" fill="#0969da" font-weight="600">Language distribution</text>
 <rect x="32.000" y="475" width="475.172" height="12" fill="#f1e05a"/>
