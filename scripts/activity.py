@@ -192,6 +192,8 @@ def collect(user, token, cache_dir, today=None, request=request_json, avatar=fet
 
 
 ICONS = {
+    'calendar': '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18m-14 5 3 3 6-6"/>',
+    'activity': '<path d="M2 12h5l3-8 4 16 3-8h5"/>',
     'notPlanned': '<circle cx="12" cy="12" r="9"/><path d="m6 18 12-12"/>',
     'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/>',
     'pr': '<circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M14 4h2a3 3 0 0 1 3 3v11M14 4l3-3M14 4l3 3"/><circle cx="19" cy="20" r="2"/>',
@@ -228,7 +230,9 @@ def render(model, theme='light', preview=False):
     dark = theme == 'dark'
     bg, panel, fg, muted, border, accent = ('#0d1117', '#161b22', '#e6edf3', '#9da7b3', '#30363d', '#79c0ff') if dark else ('#ffffff', '#f6f8fa', '#1f2328', '#59636e', '#d1d9e0', '#0969da')
     language_count = min(len(model['languages']), 8)
-    last_y = 516 + ((language_count - 1) // 2) * 25 if language_count else 493
+    has_contribution_totals = 'activeDays' in model and 'contributions' in model
+    totals_height = 36 if has_contribution_totals else 0
+    last_y = totals_height + (516 + ((language_count - 1) // 2) * 25 if language_count else 493)
     full_height = last_y + 32 + (26 if model['partial'] else 0)
     height = min(600, full_height) if preview else full_height
     fade_start = height - 150
@@ -244,17 +248,14 @@ def render(model, theme='light', preview=False):
               'purple': '#bc8cff' if dark else '#8250df',
               'red': '#f85149' if dark else '#cf222e',
               'blue': accent, 'gold': '#e3b341' if dark else '#9a6700', 'muted': muted}
-    def row(x, y, name, label, value, color):
+    def row(x, y, name, label, value, color, suffix=''):
         value = f'{value:,}' if isinstance(value, int) else escape(str(value))
         parts.append(f'<g transform="translate({x},{y-15}) scale(.75)" fill="none" stroke="{colors[color]}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</g>')
-        parts.append(f'<text x="{x+29}" y="{y}" font-size="15">{escape(label)} <tspan font-weight="700" font-size="20">{value}</tspan></text>')
+        parts.append(f'<text x="{x+29}" y="{y}" font-size="15">{escape(label)} <tspan font-weight="700" font-size="20">{value}</tspan>{escape(suffix)}</text>')
     parts.append(f'<image x="32" y="32" width="52" height="52" clip-path="url(#avatar)" xlink:href="{escape(model["avatar"], quote=True)}"/>')
     text(100, 52, model['user'], 22, extra='font-weight="700"')
     text(100, 77, 'GitHub activity', 14, muted)
     text(768, 49, model['date'], 12, muted, 'text-anchor="end"')
-    if 'activeDays' in model and 'contributions' in model:
-        parts.append(f'<text x="32" y="108" font-size="15">Active <tspan font-weight="700" font-size="20">{model["activeDays"]:,}</tspan> days'
-                     f'<tspan dx="24">Contributions </tspan><tspan dx="4" font-weight="700" font-size="20">{model["contributions"]:,}</tspan></text>')
     c = model['counts']
     items = [
         ('pr', 'PRs created', c['prOpen']+c['prMerged']+c['prClosed'], 'green'),
@@ -275,10 +276,15 @@ def render(model, theme='light', preview=False):
         ('clock', 'GitHub Joined', dt.datetime.fromisoformat(model['createdAt'].replace('Z', '+00:00'))
          .astimezone(dt.timezone.utc).strftime('%Y/%m/%d'), 'muted'),
     ]
+    if has_contribution_totals:
+        items.extend([
+            ('calendar', 'Active', model['activeDays'], 'green'),
+            ('activity', 'Contributions', model['contributions'], 'green'),
+        ])
     for i, (kind, label, value, color) in enumerate(items):
-        row(32 + i%2*380, 140+i//2*36, kind, label, value, color)
-    parts.append(f'<path d="M32 419H768" stroke="{border}"/>')
-    text(32, 453, 'Language distribution', 18, accent, 'font-weight="600"')
+        row(32 + i%2*380, 140+i//2*36, kind, label, value, color, ' days' if kind == 'calendar' else '')
+    parts.append(f'<path d="M32 {419 + totals_height}H768" stroke="{border}"/>')
+    text(32, 453 + totals_height, 'Language distribution', 18, accent, 'font-weight="600"')
     languages = model['languages']
     total = sum(l['size'] for l in languages)
     top = [dict(l) for l in languages[:7]]
@@ -288,12 +294,12 @@ def render(model, theme='light', preview=False):
     for item in top:
         color = item['color'] if re.fullmatch(r'#[0-9a-fA-F]{6}', item['color']) else '#8b949e'
         width = 736 * item['size'] / total
-        parts.append(f'<rect x="{x:.3f}" y="475" width="{width:.3f}" height="12" fill="{color}"/>')
+        parts.append(f'<rect x="{x:.3f}" y="{475 + totals_height}" width="{width:.3f}" height="12" fill="{color}"/>')
         x += width
     if not top:
-        text(32, 493, 'No detected languages', 14, muted)
+        text(32, 493 + totals_height, 'No detected languages', 14, muted)
     for i, item in enumerate(top):
-        x, y = 32 + i%2*380, 516+i//2*25
+        x, y = 32 + i%2*380, 516+totals_height+i//2*25
         color = item['color'] if re.fullmatch(r'#[0-9a-fA-F]{6}', item['color']) else '#8b949e'
         parts.append(f'<circle cx="{x+5}" cy="{y-5}" r="4" fill="{color}"/>')
         parts.append(f'<text x="{x+18}" y="{y}" font-size="13">{escape(item["name"])} <tspan fill="{muted}">{100*item["size"]/total:.1f}%</tspan><tspan dx="12" fill="{muted}">{format_bytes(item["size"])}</tspan></text>')
