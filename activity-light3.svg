@@ -25,43 +25,43 @@
 <g transform="translate(412,233) scale(.75)" fill="none" stroke="#0969da" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v13H9l-4 4zM9 9l2 2 4-4"/></g>
 <text x="441" y="248" font-size="15">PRs reviewed <tspan font-weight="700" font-size="20">17</tspan></text>
 <g transform="translate(32,269) scale(.75)" fill="none" stroke="#0969da" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M5 17h14M9 7h6"/></g>
-<text x="61" y="284" font-size="15">Repositories <tspan font-weight="700" font-size="20">63</tspan></text>
+<text x="61" y="284" font-size="15">Repositories <tspan font-weight="700" font-size="20">96</tspan></text>
 <g transform="translate(412,269) scale(.75)" fill="none" stroke="#9a6700" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></g>
-<text x="441" y="284" font-size="15">Stars received <tspan font-weight="700" font-size="20">126</tspan></text>
+<text x="441" y="284" font-size="15">Stars received <tspan font-weight="700" font-size="20">129</tspan></text>
 <g transform="translate(32,305) scale(.75)" fill="none" stroke="#59636e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16v13H4zM3 3h18v5H3zM9 12h6"/></g>
-<text x="61" y="320" font-size="15">Archived repositories <tspan font-weight="700" font-size="20">5</tspan></text>
+<text x="61" y="320" font-size="15">Archived repositories <tspan font-weight="700" font-size="20">8</tspan></text>
 <g transform="translate(412,305) scale(.75)" fill="none" stroke="#0969da" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="18" cy="4" r="2"/><circle cx="12" cy="20" r="2"/><path d="M6 6v3c0 4 12 4 12 0V6M12 12v6"/></g>
 <text x="441" y="320" font-size="15">Forks received <tspan font-weight="700" font-size="20">30</tspan></text>
 <g transform="translate(32,341) scale(.75)" fill="none" stroke="#0969da" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 12 9-9h8v8l-9 10z"/><circle cx="16" cy="7" r="1"/></g>
-<text x="61" y="356" font-size="15">Releases <tspan font-weight="700" font-size="20">110</tspan></text>
+<text x="61" y="356" font-size="15">Releases <tspan font-weight="700" font-size="20">124</tspan></text>
 <g transform="translate(412,341) scale(.75)" fill="none" stroke="#8250df" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M16 4a3 3 0 0 1 0 6M18 14a6 6 0 0 1 4 7"/></g>
 <text x="441" y="356" font-size="15">Followers <tspan font-weight="700" font-size="20">70</tspan></text>
 <path d="M32 383H768" stroke="#d1d9e0"/>
 <text x="32" y="417" font-size="18" fill="#0969da" font-weight="600">Language distribution</text>
-<rect x="32.000" y="439" width="527.967" height="12" fill="#f1e05a"/>
-<rect x="559.967" y="439" width="91.607" height="12" fill="#e34c26"/>
-<rect x="651.575" y="439" width="50.457" height="12" fill="#4F5D95"/>
-<rect x="702.031" y="439" width="27.523" height="12" fill="#f34b7d"/>
-<rect x="729.555" y="439" width="13.813" height="12" fill="#3572A5"/>
-<rect x="743.368" y="439" width="6.932" height="12" fill="#7355dd"/>
-<rect x="750.300" y="439" width="5.920" height="12" fill="#000080"/>
-<rect x="756.220" y="439" width="11.780" height="12" fill="#8b949e"/>
+<rect x="32.000" y="439" width="475.249" height="12" fill="#f1e05a"/>
+<rect x="507.249" y="439" width="128.988" height="12" fill="#4F5D95"/>
+<rect x="636.238" y="439" width="51.864" height="12" fill="#e34c26"/>
+<rect x="688.102" y="439" width="32.257" height="12" fill="#3572A5"/>
+<rect x="720.359" y="439" width="19.211" height="12" fill="#f34b7d"/>
+<rect x="739.570" y="439" width="14.064" height="12" fill="#000080"/>
+<rect x="753.634" y="439" width="4.700" height="12" fill="#7355dd"/>
+<rect x="758.334" y="439" width="9.666" height="12" fill="#8b949e"/>
 <circle cx="37" cy="475" r="4" fill="#f1e05a"/>
-<text x="50" y="480" font-size="13">JavaScript <tspan fill="#59636e">71.7%</tspan></text>
-<circle cx="417" cy="475" r="4" fill="#e34c26"/>
-<text x="430" y="480" font-size="13">HTML <tspan fill="#59636e">12.4%</tspan></text>
-<circle cx="37" cy="500" r="4" fill="#4F5D95"/>
-<text x="50" y="505" font-size="13">PHP <tspan fill="#59636e">6.9%</tspan></text>
-<circle cx="417" cy="500" r="4" fill="#f34b7d"/>
-<text x="430" y="505" font-size="13">C++ <tspan fill="#59636e">3.7%</tspan></text>
-<circle cx="37" cy="525" r="4" fill="#3572A5"/>
-<text x="50" y="530" font-size="13">Python <tspan fill="#59636e">1.9%</tspan></text>
-<circle cx="417" cy="525" r="4" fill="#7355dd"/>
-<text x="430" y="530" font-size="13">C# <tspan fill="#59636e">0.9%</tspan></text>
-<circle cx="37" cy="550" r="4" fill="#000080"/>
-<text x="50" y="555" font-size="13">Lua <tspan fill="#59636e">0.8%</tspan></text>
+<text x="50" y="480" font-size="13">JavaScript <tspan fill="#59636e">64.6%</tspan></text>
+<circle cx="417" cy="475" r="4" fill="#4F5D95"/>
+<text x="430" y="480" font-size="13">PHP <tspan fill="#59636e">17.5%</tspan></text>
+<circle cx="37" cy="500" r="4" fill="#e34c26"/>
+<text x="50" y="505" font-size="13">HTML <tspan fill="#59636e">7.0%</tspan></text>
+<circle cx="417" cy="500" r="4" fill="#3572A5"/>
+<text x="430" y="505" font-size="13">Python <tspan fill="#59636e">4.4%</tspan></text>
+<circle cx="37" cy="525" r="4" fill="#f34b7d"/>
+<text x="50" y="530" font-size="13">C++ <tspan fill="#59636e">2.6%</tspan></text>
+<circle cx="417" cy="525" r="4" fill="#000080"/>
+<text x="430" y="530" font-size="13">Lua <tspan fill="#59636e">1.9%</tspan></text>
+<circle cx="37" cy="550" r="4" fill="#7355dd"/>
+<text x="50" y="555" font-size="13">C# <tspan fill="#59636e">0.6%</tspan></text>
 <circle cx="417" cy="550" r="4" fill="#8b949e"/>
-<text x="430" y="555" font-size="13">Other languages <tspan fill="#59636e">1.6%</tspan></text>
-<text x="32" y="602" font-size="11" fill="#59636e" >Language bytes across 63 / 63 public, non-fork repositories.</text>
-<text x="32" y="621" font-size="11" fill="#59636e" >PRs / issues: authored, all time. Reviews: distinct PRs. Repositories: owned, non-fork.</text>
+<text x="430" y="555" font-size="13">Other languages <tspan fill="#59636e">1.3%</tspan></text>
+<text x="32" y="602" font-size="11" fill="#59636e" >Language bytes across 96 / 96 token-accessible, non-fork repositories.</text>
+<text x="32" y="621" font-size="11" fill="#59636e" >PRs / issues: authored. Reviews: distinct PRs. Repositories: owned / collaborator / organization, non-fork.</text>
 </g></svg>
