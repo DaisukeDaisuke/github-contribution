@@ -20,7 +20,7 @@
 <text x="61" y="212" font-size="15">PRs merged <tspan font-weight="700" font-size="20">102</tspan></text>
 <g transform="translate(412,197) scale(.75)" fill="none" stroke="#8250df" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16v1"/></g>
 <text x="441" y="212" font-size="15">Issues closed <tspan font-weight="700" font-size="20">84</tspan></text>
-<g transform="translate(32,233) scale(.75)" fill="none" stroke="#8250df" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M14 4h2a3 3 0 0 1 3 3v11M14 4l3-3M14 4l3 3"/><circle cx="19" cy="20" r="2"/></g>
+<g transform="translate(32,233) scale(.75)" fill="none" stroke="#cf222e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M14 4h2a3 3 0 0 1 3 3v11M14 4l3-3M14 4l3 3"/><circle cx="19" cy="20" r="2"/></g>
 <text x="61" y="248" font-size="15">PRs closed, unmerged <tspan font-weight="700" font-size="20">28</tspan></text>
 <g transform="translate(412,233) scale(.75)" fill="none" stroke="#0969da" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v13H9l-4 4zM9 9l2 2 4-4"/></g>
 <text x="441" y="248" font-size="15">PRs reviewed <tspan font-weight="700" font-size="20">17</tspan></text>
