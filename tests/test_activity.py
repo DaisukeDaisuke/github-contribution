@@ -1,4 +1,5 @@
 import copy
+import io
 import json
 from pathlib import Path
 import sys
@@ -13,7 +14,7 @@ import activity
 
 def response(next_page=False, repo_id='one'):
     return {'data': {'user': {
-        'login': 'OtherUser', 'avatarUrl': 'https://avatars.githubusercontent.com/u/1',
+        'login': 'OtherUser', 'createdAt': '2013-04-05T06:07:08Z', 'avatarUrl': 'https://avatars.githubusercontent.com/u/1',
         'followers': {'totalCount': 23}, 'following': {'totalCount': 7},
         'repositories': {'totalCount': 2 if next_page else 1,
             'pageInfo': {'hasNextPage': next_page, 'endCursor': repo_id},
@@ -26,6 +27,50 @@ def response(next_page=False, repo_id='one'):
 
 
 class ActivityTests(unittest.TestCase):
+    def test_joined_and_not_planned_share_first_request_and_refresh_old_cache(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            file = Path(tmp) / 'public/otheruser/snapshot.json'
+            file.parent.mkdir(parents=True)
+            file.write_text(json.dumps({'schema': 4, 'scope': 'public', 'user': 'OtherUser', 'week': '2031-W01'}))
+            calls = []
+            def request(*args, **kwargs):
+                calls.append(kwargs['body']['query'])
+                return response(), {}
+            model = activity.collect('OtherUser', 'token', tmp, '2031-01-01', request,
+                                     lambda _: 'data:image/png;base64,AA==')
+            self.assertEqual(len(calls), 1)
+            self.assertIn('createdAt', calls[0])
+            self.assertIn(json.dumps('is:public is:issue is:closed reason:"not planned" author:OtherUser'), calls[0])
+            self.assertNotIn('createdAt', activity.query('OtherUser', False))
+            self.assertEqual(model['createdAt'], '2013-04-05T06:07:08Z')
+            for theme, grey in [('dark', '#9da7b3'), ('light', '#59636e')]:
+                svg = ET.fromstring(activity.render(model, theme))
+                ns = {'s': 'http://www.w3.org/2000/svg'}
+                labels = [''.join(node.itertext()) for node in svg.findall('.//s:text', ns)]
+                self.assertIn('GitHub Joined 2013', labels)
+                self.assertIn(f'Issues not planned {model["counts"]["issueNotPlanned"]}', labels)
+                icon = svg.find('.//s:g[@transform="translate(32,377) scale(.75)"]', ns)
+                self.assertEqual(icon.attrib['stroke'], grey)
+
+    def test_every_attempt_logs_budget_and_server_points_even_on_errors(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(activity.time, 'sleep'), patch('sys.stdout', new_callable=io.StringIO) as stdout:
+            calls = []
+            def request(*args, **kwargs):
+                calls.append(1)
+                if len(calls) == 1:
+                    raise activity.APIHTTPError(502, remaining='4999')
+                if len(calls) == 2:
+                    return response(True), {}
+                return {'errors': [{'message': 'rate limited'}]}, {'remaining': '0'}
+            with self.assertRaises(RuntimeError):
+                activity.collect('OtherUser', 'token', tmp, '2031-01-01', request)
+            lines = [line for line in stdout.getvalue().splitlines() if line.startswith('Activity API request ')]
+            self.assertEqual(len(lines), 3)
+            for line, budget, points in zip(lines, (48, 47, 46), (4999, 4000, 0)):
+                self.assertIn(f'{budget} script requests remaining', line)
+                self.assertIn(f'GitHub points remaining={points}', line)
+            self.assertIn('cost=1', lines[1])
+
     def test_weekly_cache_isolates_user_and_reuses_avatar_next_week(self):
         with tempfile.TemporaryDirectory() as tmp:
             calls, avatars = [], []
@@ -108,7 +153,7 @@ class ActivityTests(unittest.TestCase):
                 for suffix in ('','3'):
                     self.assertEqual((dist/f'profile-{theme}{suffix}.svg').read_text(),'unchanged original')
                     svg=ET.fromstring((dist/f'activity-{theme}{suffix}.svg').read_text())
-                    self.assertEqual(svg.attrib['height'],'512')
+                    self.assertEqual(svg.attrib['height'],'548')
             self.assertFalse(list(dist.glob('*.json')))
             embed=(dist/'embed.md').read_text()
             self.assertIn('[![activity-dark.webp](/../images/activity-dark3.webp#gh-dark-mode-only)](/../images/activity-dark.webp#gh-dark-mode-only)',embed)

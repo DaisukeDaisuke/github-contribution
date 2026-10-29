@@ -10,7 +10,7 @@ module.exports = async function ({core, cache}, mode) {
   const user = (process.env.CONTRIBUTION_USER || '').toLowerCase();
   if (!/^[a-z0-9][a-z0-9-]{0,38}$/.test(user)) throw new Error('Invalid activity user');
   const scope = process.env.ACTIVITY_SCOPE === 'accessible' ? 'accessible' : 'public';
-  const prefix = `activity-v4-${scope}-${user}-`;
+  const prefix = `activity-v5-${scope}-${user}-`;
   // ISO week: Thursday determines the week-year, including New Year boundaries.
   const date = new Date();
   date.setUTCHours(0, 0, 0, 0);

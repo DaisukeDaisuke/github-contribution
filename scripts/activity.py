@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 
 from generate import APIHTTPError, request_json
 
-SCHEMA = 4
+SCHEMA = 5
 MAX_REQUESTS = 49  # Includes failed attempts; reserve one request for the avatar.
 REPOSITORIES = '''repositories(first: PAGE_SIZE, after: $cursor, ownerAffiliations: [OWNER],
   privacy: PUBLIC, isFork: false, orderBy: {field: NAME, direction: ASC}) {
@@ -34,6 +34,7 @@ FILTERS = {
     'prClosed': 'is:pr is:closed is:unmerged author:',
     'issueOpen': 'is:issue is:open author:',
     'issueClosed': 'is:issue is:closed author:',
+    'issueNotPlanned': 'is:issue is:closed reason:"not planned" author:',
     'reviewed': 'is:pr reviewed-by:',
 }
 
@@ -45,9 +46,9 @@ def query(user, first, include_private=False, page_size=25):
         repositories = repositories.replace('privacy: PUBLIC, ', '').replace(
             'ownerAffiliations: [OWNER]',
             'ownerAffiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER]')
-    searches = '\n'.join(f'{key}: search(type: ISSUE, first: 1, query: "{visibility}{value}{user}") {{issueCount}}'
+    searches = '\n'.join(f'{key}: search(type: ISSUE, first: 1, query: {json.dumps(visibility + value + user)}) {{issueCount}}'
                          for key, value in FILTERS.items()) if first else ''
-    identity = 'login avatarUrl(size: 128) followers {totalCount}' if first else 'login'
+    identity = 'login createdAt avatarUrl(size: 128) followers {totalCount}' if first else 'login'
     return f'''query Activity($login: String!, $cursor: String) {{
       user(login: $login) {{ {identity} {repositories} }}
       {searches}
@@ -89,12 +90,17 @@ def collect(user, token, cache_dir, today=None, request=request_json, avatar=fet
     for page in range(MAX_REQUESTS):
         for retry in range(3):
             attempts += 1
+            remaining, cost = None, None
             try:
-                raw, _ = request('https://api.github.com/graphql', token=token, body={
+                raw, headers = request('https://api.github.com/graphql', token=token, body={
                     'query': query(user, page == 0, include_private, page_size),
                     'variables': {'login': user, 'cursor': cursor}})
+                rate = (raw.get('data') or {}).get('rateLimit') or {}
+                remaining = rate.get('remaining', headers.get('remaining'))
+                cost = rate.get('cost')
                 break
             except APIHTTPError as exc:
+                remaining = exc.remaining
                 from deploy import redact_diagnostics
                 diagnostic = (f'GitHub API HTTP {exc.status}; request-id={exc.request_id or "not supplied"}\n'
                               'Response body (credentials redacted):\n' +
@@ -114,7 +120,14 @@ def collect(user, token, cache_dir, today=None, request=request_json, avatar=fet
                 page_size = max(5, page_size // 2)
                 print(f'Activity API HTTP {exc.status}; retry {retry + 1}/2 in {delay}s '
                       f'with {page_size} repositories per page.', flush=True)
-                time.sleep(delay)
+            finally:
+                # Rate limits are points, not a guaranteed number of further calls.
+                def number(value):
+                    return str(value) if re.fullmatch(r'[0-9]+', str(value)) else 'unknown'
+                print(f'Activity API request {attempts}/{MAX_REQUESTS}: '
+                      f'{MAX_REQUESTS - attempts} script requests remaining; '
+                      f'GitHub points remaining={number(remaining)}; cost={number(cost)}.', flush=True)
+            time.sleep(delay)
         if raw.get('errors'):
             raise RuntimeError('Activity GraphQL failed: ' + '; '.join(e.get('message', 'error') for e in raw['errors']))
         data = raw['data']
@@ -125,6 +138,7 @@ def collect(user, token, cache_dir, today=None, request=request_json, avatar=fet
             model = {'schema': SCHEMA, 'scope': scope, 'user': account['login'], 'date': today, 'week': week,
                      'counts': {key: data[key]['issueCount'] for key in FILTERS},
                      'followers': account['followers']['totalCount'],
+                     'createdAt': account['createdAt'],
                      'avatarUrl': account['avatarUrl']}
         connection = account['repositories']
         for repo in connection['nodes']:
@@ -165,6 +179,8 @@ def collect(user, token, cache_dir, today=None, request=request_json, avatar=fet
 
 
 ICONS = {
+    'notPlanned': '<circle cx="12" cy="12" r="9"/><path d="m6 18 12-12"/>',
+    'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/>',
     'pr': '<circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><path d="M6 6v12M14 4h2a3 3 0 0 1 3 3v11M14 4l3-3M14 4l3 3"/><circle cx="19" cy="20" r="2"/>',
     'issue': '<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16v1"/>',
     'review': '<path d="M5 3h14v13H9l-4 4zM9 9l2 2 4-4"/>',
@@ -191,7 +207,7 @@ def render(model, theme='light', preview=False):
     dark = theme == 'dark'
     bg, panel, fg, muted, border, accent = ('#0d1117', '#161b22', '#e6edf3', '#9da7b3', '#30363d', '#79c0ff') if dark else ('#ffffff', '#f6f8fa', '#1f2328', '#59636e', '#d1d9e0', '#0969da')
     language_count = min(len(model['languages']), 8)
-    last_y = 480 + ((language_count - 1) // 2) * 25 if language_count else 457
+    last_y = 516 + ((language_count - 1) // 2) * 25 if language_count else 493
     full_height = last_y + 32 + (26 if model['partial'] else 0)
     height = min(600, full_height) if preview else full_height
     fade_start = height - 150
@@ -208,8 +224,9 @@ def render(model, theme='light', preview=False):
               'red': '#f85149' if dark else '#cf222e',
               'blue': accent, 'gold': '#e3b341' if dark else '#9a6700', 'muted': muted}
     def row(x, y, name, label, value, color):
+        value = f'{value:,}' if isinstance(value, int) else escape(str(value))
         parts.append(f'<g transform="translate({x},{y-15}) scale(.75)" fill="none" stroke="{colors[color]}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</g>')
-        parts.append(f'<text x="{x+29}" y="{y}" font-size="15">{escape(label)} <tspan font-weight="700" font-size="20">{value:,}</tspan></text>')
+        parts.append(f'<text x="{x+29}" y="{y}" font-size="15">{escape(label)} <tspan font-weight="700" font-size="20">{value}</tspan></text>')
     parts.append(f'<image x="32" y="32" width="52" height="52" clip-path="url(#avatar)" xlink:href="{escape(model["avatar"], quote=True)}"/>')
     text(100, 52, model['user'], 22, extra='font-weight="700"')
     text(100, 77, 'GitHub activity', 14, muted)
@@ -230,11 +247,13 @@ def render(model, theme='light', preview=False):
         ('fork', 'Forks received', model['forks'], 'blue'),
         ('release', 'Releases', model['releases'], 'blue'),
         ('people', 'Followers', model['followers'], 'purple'),
+        ('notPlanned', 'Issues not planned', c['issueNotPlanned'], 'muted'),
+        ('clock', 'GitHub Joined', str(dt.datetime.fromisoformat(model['createdAt'].replace('Z', '+00:00')).year), 'muted'),
     ]
     for i, (kind, label, value, color) in enumerate(items):
         row(32 + i%2*380, 140+i//2*36, kind, label, value, color)
-    parts.append(f'<path d="M32 383H768" stroke="{border}"/>')
-    text(32, 417, 'Language distribution', 18, accent, 'font-weight="600"')
+    parts.append(f'<path d="M32 419H768" stroke="{border}"/>')
+    text(32, 453, 'Language distribution', 18, accent, 'font-weight="600"')
     languages = model['languages']
     total = sum(l['size'] for l in languages)
     top = [dict(l) for l in languages[:7]]
@@ -244,12 +263,12 @@ def render(model, theme='light', preview=False):
     for item in top:
         color = item['color'] if re.fullmatch(r'#[0-9a-fA-F]{6}', item['color']) else '#8b949e'
         width = 736 * item['size'] / total
-        parts.append(f'<rect x="{x:.3f}" y="439" width="{width:.3f}" height="12" fill="{color}"/>')
+        parts.append(f'<rect x="{x:.3f}" y="475" width="{width:.3f}" height="12" fill="{color}"/>')
         x += width
     if not top:
-        text(32, 457, 'No detected languages', 14, muted)
+        text(32, 493, 'No detected languages', 14, muted)
     for i, item in enumerate(top):
-        x, y = 32 + i%2*380, 480+i//2*25
+        x, y = 32 + i%2*380, 516+i//2*25
         color = item['color'] if re.fullmatch(r'#[0-9a-fA-F]{6}', item['color']) else '#8b949e'
         parts.append(f'<circle cx="{x+5}" cy="{y-5}" r="4" fill="{color}"/>')
         parts.append(f'<text x="{x+18}" y="{y}" font-size="13">{escape(item["name"])} <tspan fill="{muted}">{100*item["size"]/total:.1f}%</tspan><tspan dx="12" fill="{muted}">{format_bytes(item["size"])}</tspan></text>')
