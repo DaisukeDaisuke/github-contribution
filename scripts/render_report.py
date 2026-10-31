@@ -4,11 +4,16 @@ import html
 import json
 import math
 import xml.etree.ElementTree as ET
+from zoneinfo import ZoneInfo
 
 COLORS = ['#eff2f5', '#aceebb', '#4ac26b', '#2da44e', '#116329']
 THEMES = {
     'light': {'background':'#ffffff','foreground':'#1f2328','muted':'#59636e','border':'#d1d9e0','hover':'#f6f8fa','stroke':'#1f2328','strokeOpacity':'.08','palette':COLORS},
     'dark': {'background':'#0d1117','foreground':'#f0f6fc','muted':'#9198a1','border':'#3d444d','hover':'#151b23','stroke':'#000000','strokeOpacity':'.05','palette':['#151b23','#033a16','#196c2e','#2ea043','#56d364']},
+}
+HALLOWEEN_PALETTES = {
+    'light': ['#eff2f5', '#f0db3d', '#ffd642', '#f68c41', '#1f2328'],
+    'dark': ['#151b23', '#fac68f', '#c46212', '#984b10', '#e3d04f'],
 }
 WEEKDAYS = ['月', '火', '水', '木', '金', '土', '日']
 COLUMNS = 52
@@ -36,9 +41,18 @@ def text(x, y, value, size=12, color='#59636e', weight=400, extra=''):
     return f'<text x="{x}" y="{y}" fill="{color}" font-size="{size}" font-weight="{weight}" {extra}>{esc(value)}</text>'
 
 
-def svg_theme_styles():
+def themes_for_generation(generated_at=None):
+    """Select October colors by generation time in JST, not calendar dates."""
+    timezone = ZoneInfo('Asia/Tokyo')
+    generated = dt.datetime.fromisoformat(generated_at) if generated_at else dt.datetime.now(timezone)
+    halloween = generated.astimezone(timezone).month == 10
+    return {name: dict(colors, palette=HALLOWEEN_PALETTES[name] if halloween else colors['palette'])
+            for name, colors in THEMES.items()}
+
+
+def svg_theme_styles(themes):
     rules = []
-    for name,colors in THEMES.items():
+    for name,colors in themes.items():
         selector = f'svg[data-theme="{name}"]'
         rules.extend([
             f'{selector} .canvas{{fill:{colors["background"]}}}',
@@ -52,7 +66,8 @@ def svg_theme_styles():
 
 
 def calendar_svg(report, interactive=False, theme='light', show_credit=True):
-    colors = THEMES[theme]
+    themes = themes_for_generation(report['metadata'].get('generatedAt'))
+    colors = themes[theme]
     palette = colors['palette']
     meta = report['metadata']
     start = dt.date.fromisoformat(meta['periodStart'])
@@ -62,7 +77,7 @@ def calendar_svg(report, interactive=False, theme='light', show_credit=True):
     bands = math.ceil(weeks / COLUMNS)
     grid_height = bands * 7 * STEP
     height = TOP + grid_height + 29
-    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{height}" viewBox="0 0 {WIDTH} {height}" class="calendar" role="img" aria-labelledby="map-title" data-layout="continuous" data-week-columns="{COLUMNS}" data-band-order="newest-first" data-theme="{theme}"><title id="map-title">{esc(meta["user"])} {meta["periodStart"]} — {meta["periodEnd"]}</title><style>text{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}}{svg_theme_styles()}.calendar .day:hover,.calendar .day:focus{{outline:none;stroke:#0969da;stroke-width:1.5;stroke-opacity:1}}</style><rect class="canvas" width="{WIDTH}" height="{height}" fill="{colors["background"]}"/>']
+    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{height}" viewBox="0 0 {WIDTH} {height}" class="calendar" role="img" aria-labelledby="map-title" data-layout="continuous" data-week-columns="{COLUMNS}" data-band-order="newest-first" data-theme="{theme}"><title id="map-title">{esc(meta["user"])} {meta["periodStart"]} — {meta["periodEnd"]}</title><style>text{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}}{svg_theme_styles(themes)}.calendar .day:hover,.calendar .day:focus{{outline:none;stroke:#0969da;stroke-width:1.5;stroke-opacity:1}}</style><rect class="canvas" width="{WIDTH}" height="{height}" fill="{colors["background"]}"/>']
     parts.append(text(LEFT,25,meta['user'],19,colors['foreground'],600,extra='class="primary"'))
     parts.append(text(WIDTH-17,25,f'{report["summary"]["total"]:,} contributions',13,colors['foreground'],extra='text-anchor="end" class="primary"'))
     parts.append(text(LEFT,45,meta['periodStart']+' — '+meta['periodEnd'],11,colors['muted']))

@@ -263,6 +263,7 @@ class ArchiveTests(unittest.TestCase):
 
     def test_dark_and_light_preserve_identical_grid_geometry_and_data(self):
         report=generate.build_report(sample_days(),meta(),2025,dt.date(2026,1,7))
+        report['metadata']['generatedAt']='2026-01-07T12:00:00+09:00'
         light=ET.fromstring(render_report.render_svg(report))
         dark=ET.fromstring(render_report.render_svg(report,theme='dark'))
         left={n.attrib['data-date']:n.attrib for n in light.iter() if 'data-date' in n.attrib}

@@ -19,7 +19,6 @@ import urllib.request
 from zoneinfo import ZoneInfo
 
 LEVELS = {'NONE': 0, 'FIRST_QUARTILE': 1, 'SECOND_QUARTILE': 2, 'THIRD_QUARTILE': 3, 'FOURTH_QUARTILE': 4}
-PALETTE = ['#eff2f5', '#aceebb', '#4ac26b', '#2da44e', '#116329']
 REQUEST_INTERVAL_SECONDS = 1.2
 _last_request_finished = None
 
@@ -253,6 +252,7 @@ def statistics(days, joined):
 
 
 def build_report(entries, metadata, start_year, until):
+    from render_report import themes_for_generation
     joined = metadata['accountCreatedAt'][:10]
     days = validate_days(entries, start_year, until, joined)
     summary = statistics(days, joined)
@@ -281,7 +281,9 @@ def build_report(entries, metadata, start_year, until):
         item = dict(statistics(selected, joined), weekday=wd, label='月火水木金土日'[wd])
         weekdays.append(item)
     meta = dict(metadata)
-    meta.update(periodStart=f'{start_year}-01-01', periodEnd=until.isoformat(), cutoffTimezone='Asia/Tokyo', palette=PALETTE,
+    generated_at = dt.datetime.now(ZoneInfo('Asia/Tokyo')).isoformat()
+    meta.update(periodStart=f'{start_year}-01-01', periodEnd=until.isoformat(), cutoffTimezone='Asia/Tokyo',
+                generatedAt=generated_at, palette=themes_for_generation(generated_at)['light']['palette'],
                 preAccountDaysExcludedFromRates=sum(d['date'] < joined for d in days),
                 futureDaysExcluded=(dt.date(until.year, 12, 31) - until).days,
                 dayBoundary='GitHub dates are preserved; no timezone redistribution')
