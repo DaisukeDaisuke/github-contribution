@@ -3954,3 +3954,5 @@ date,weekday,count,level,before_account_created
 2026-10-27,火,2,1,false
 2026-10-28,水,27,2,false
 2026-10-29,木,21,2,false
+2026-10-30,金,0,0,false
+2026-10-31,土,1,1,false
